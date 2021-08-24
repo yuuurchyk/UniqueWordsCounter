@@ -1,7 +1,7 @@
+#include "UniqueWordsCounter/utils/openAddressingSet.h"
+
 #include <cstring>
 #include <utility>
-
-#include "UniqueWordsCounter/utils/openAddressingSet.h"
 
 void OpenAddressingSet::allocateBuckets(std::unique_ptr<value_t[]> &target, size_t count)
 {

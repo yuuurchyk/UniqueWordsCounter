@@ -1,3 +1,5 @@
+#include "UniqueWordsCounter/methods.h"
+
 #include <algorithm>
 #include <condition_variable>
 #include <deque>
@@ -10,7 +12,6 @@
 #include <utility>
 #include <vector>
 
-#include "UniqueWordsCounter/methods.h"
 #include "UniqueWordsCounter/utils/getFile.h"
 
 namespace

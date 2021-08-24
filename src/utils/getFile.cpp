@@ -1,7 +1,7 @@
+#include "UniqueWordsCounter/utils/getFile.h"
+
 #include <sstream>
 #include <stdexcept>
-
-#include "UniqueWordsCounter/utils/getFile.h"
 
 auto getFile(const char *filename) -> std::ifstream
 {

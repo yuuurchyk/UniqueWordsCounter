@@ -1,8 +1,9 @@
+#include "UniqueWordsCounter/methods.h"
+
 #include <string>
 #include <unordered_set>
 #include <utility>
 
-#include "UniqueWordsCounter/methods.h"
 #include "UniqueWordsCounter/utils/getFile.h"
 
 auto UniqueWordsCounter::Sequential::baseline(const char *filename) -> size_t
