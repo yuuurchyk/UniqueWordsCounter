@@ -4,89 +4,89 @@
 
 BENCHMARK_CAPTURE(BM_producerConsumer,
                   producerConsumer_1cons_short10MB,
-                  kSyntheticLongWords10MB.c_str(),
+                  kSyntheticShortWords10MB.c_str(),
                   1)
     ->Unit(benchmark::kMillisecond)
-    ->Iterations(2500)
+    ->Iterations(250)
     ->Name("producerConsumer_1cons_short10MB");
 BENCHMARK_CAPTURE(BM_producerConsumer,
                   producerConsumer_2cons_short10MB,
-                  kSyntheticLongWords10MB.c_str(),
+                  kSyntheticShortWords10MB.c_str(),
                   2)
     ->Unit(benchmark::kMillisecond)
-    ->Iterations(2500)
+    ->Iterations(250)
     ->Name("producerConsumer_2cons_short10MB");
 BENCHMARK_CAPTURE(BM_producerConsumer,
                   producerConsumer_4cons_short10MB,
-                  kSyntheticLongWords10MB.c_str(),
+                  kSyntheticShortWords10MB.c_str(),
                   4)
     ->Unit(benchmark::kMillisecond)
-    ->Iterations(2500)
+    ->Iterations(250)
     ->Name("producerConsumer_4cons_short10MB");
 BENCHMARK_CAPTURE(BM_producerConsumer,
                   producerConsumer_8cons_short10MB,
-                  kSyntheticLongWords10MB.c_str(),
+                  kSyntheticShortWords10MB.c_str(),
                   8)
     ->Unit(benchmark::kMillisecond)
-    ->Iterations(2500)
+    ->Iterations(250)
     ->Name("producerConsumer_8cons_short10MB");
 
 BENCHMARK_CAPTURE(BM_producerConsumer,
                   producerConsumer_1cons_short100MB,
-                  kSyntheticLongWords100MB.c_str(),
+                  kSyntheticShortWords100MB.c_str(),
                   1)
     ->Unit(benchmark::kMillisecond)
-    ->Iterations(250)
+    ->Iterations(25)
     ->Name("producerConsumer_1cons_short100MB");
 BENCHMARK_CAPTURE(BM_producerConsumer,
                   producerConsumer_2cons_short100MB,
-                  kSyntheticLongWords100MB.c_str(),
+                  kSyntheticShortWords100MB.c_str(),
                   2)
     ->Unit(benchmark::kMillisecond)
-    ->Iterations(250)
+    ->Iterations(25)
     ->Name("producerConsumer_2cons_short100MB");
 BENCHMARK_CAPTURE(BM_producerConsumer,
                   producerConsumer_4cons_short100MB,
-                  kSyntheticLongWords100MB.c_str(),
+                  kSyntheticShortWords100MB.c_str(),
                   4)
     ->Unit(benchmark::kMillisecond)
-    ->Iterations(250)
+    ->Iterations(25)
     ->Name("producerConsumer_4cons_short100MB");
 BENCHMARK_CAPTURE(BM_producerConsumer,
                   producerConsumer_8cons_short100MB,
-                  kSyntheticLongWords100MB.c_str(),
+                  kSyntheticShortWords100MB.c_str(),
                   8)
     ->Unit(benchmark::kMillisecond)
-    ->Iterations(250)
+    ->Iterations(25)
     ->Name("producerConsumer_8cons_short100MB");
 
 BENCHMARK_CAPTURE(BM_producerConsumer,
                   producerConsumer_1cons_short1000MB,
-                  kSyntheticLongWords1000MB.c_str(),
+                  kSyntheticShortWords1000MB.c_str(),
                   1)
     ->Unit(benchmark::kMillisecond)
-    ->Iterations(25)
+    ->Iterations(10)
     ->Name("producerConsumer_1cons_short1000MB");
 BENCHMARK_CAPTURE(BM_producerConsumer,
                   producerConsumer_2cons_short1000MB,
-                  kSyntheticLongWords1000MB.c_str(),
+                  kSyntheticShortWords1000MB.c_str(),
                   2)
     ->Unit(benchmark::kMillisecond)
-    ->Iterations(25)
+    ->Iterations(10)
     ->Name("producerConsumer_2cons_short1000MB");
 BENCHMARK_CAPTURE(BM_producerConsumer,
                   producerConsumer_4cons_short1000MB,
-                  kSyntheticLongWords1000MB.c_str(),
+                  kSyntheticShortWords1000MB.c_str(),
                   4)
     ->Unit(benchmark::kMillisecond)
-    ->Iterations(2500)
+    ->Iterations(10)
     ->Name("producerConsumer_4cons_short1000MB");
 BENCHMARK_CAPTURE(BM_producerConsumer,
                   producerConsumer_8cons_short1000MB,
-                  kSyntheticLongWords1000MB.c_str(),
+                  kSyntheticShortWords1000MB.c_str(),
                   8)
     ->Unit(benchmark::kMillisecond)
-    ->Iterations(25)
+    ->Iterations(10)
     ->Name("producerConsumer_8cons_short1000MB");
 
 BENCHMARK_MAIN();
