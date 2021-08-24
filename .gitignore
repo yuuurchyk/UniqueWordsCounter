@@ -1,0 +1,8 @@
+build/
+.vscode/
+data/syntheticShortWords10MB.txt
+data/syntheticLongWords10MB.txt
+data/syntheticShortWords100MB.txt
+data/syntheticLongWords100MB.txt
+data/syntheticShortWords1000MB.txt
+data/syntheticLongWords1000MB.txt
