@@ -7,7 +7,10 @@
 template <class... Args>
 void BM_baseline(benchmark::State &state, Args &&...args)
 {
+    size_t result{};
+
     for (auto _ : state)
-        state.counters["uniqueWords"] =
-            UniqueWordsCounter::Sequential::baseline(std::forward<Args>(args)...);
+        result = UniqueWordsCounter::Sequential::baseline(std::forward<Args>(args)...);
+
+    state.counters["uniqueWords"] = result;
 }
