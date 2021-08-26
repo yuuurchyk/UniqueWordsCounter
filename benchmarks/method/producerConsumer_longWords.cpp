@@ -65,28 +65,28 @@ BENCHMARK_CAPTURE(BM_producerConsumer,
                   kSyntheticLongWords1000MB.c_str(),
                   1)
     ->Unit(benchmark::kMillisecond)
-    ->Iterations(10)
+    ->Iterations(5)
     ->Name("producerConsumer_1cons_long1000MB");
 BENCHMARK_CAPTURE(BM_producerConsumer,
                   producerConsumer_2cons_long1000MB,
                   kSyntheticLongWords1000MB.c_str(),
                   2)
     ->Unit(benchmark::kMillisecond)
-    ->Iterations(10)
+    ->Iterations(5)
     ->Name("producerConsumer_2cons_long1000MB");
 BENCHMARK_CAPTURE(BM_producerConsumer,
                   producerConsumer_4cons_long1000MB,
                   kSyntheticLongWords1000MB.c_str(),
                   4)
     ->Unit(benchmark::kMillisecond)
-    ->Iterations(10)
+    ->Iterations(5)
     ->Name("producerConsumer_4cons_long1000MB");
 BENCHMARK_CAPTURE(BM_producerConsumer,
                   producerConsumer_8cons_long1000MB,
                   kSyntheticLongWords1000MB.c_str(),
                   8)
     ->Unit(benchmark::kMillisecond)
-    ->Iterations(10)
+    ->Iterations(5)
     ->Name("producerConsumer_8cons_long1000MB");
 
 BENCHMARK_MAIN();
