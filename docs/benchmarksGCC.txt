@@ -1,0 +1,111 @@
+2021-08-26T21:26:20+03:00
+Running ./benchmark_baseline_shortWords
+Run on (12 X 2023.85 MHz CPU s)
+CPU Caches:
+  L1 Data 32 KiB (x6)
+  L1 Instruction 32 KiB (x6)
+  L2 Unified 256 KiB (x6)
+  L3 Unified 12288 KiB (x1)
+Load Average: 1.17, 2.05, 1.26
+2021-08-26T21:27:10+03:00
+Running ./benchmark_baseline_shortWords
+Run on (12 X 4200.33 MHz CPU s)
+CPU Caches:
+  L1 Data 32 KiB (x6)
+  L1 Instruction 32 KiB (x6)
+  L2 Unified 256 KiB (x6)
+  L3 Unified 12288 KiB (x1)
+Load Average: 0.63, 1.78, 1.21
+---------------------------------------------------------------------------------------------
+Benchmark                                   Time             CPU   Iterations UserCounters...
+---------------------------------------------------------------------------------------------
+baseline_short10MB/iterations:1000        584 ms          583 ms         1000 uniqueWords=1.27917M
+baseline_short100MB/iterations:100       7028 ms         7027 ms          100 uniqueWords=10.4385M
+baseline_short1000MB/iterations:10      78661 ms        78659 ms           10 uniqueWords=80.1566M
+2021-08-26T22:01:43+03:00
+Running ./benchmark_baseline_longWords
+Run on (12 X 4142.32 MHz CPU s)
+CPU Caches:
+  L1 Data 32 KiB (x6)
+  L1 Instruction 32 KiB (x6)
+  L2 Unified 256 KiB (x6)
+  L3 Unified 12288 KiB (x1)
+Load Average: 1.01, 1.01, 1.00
+--------------------------------------------------------------------------------------------
+Benchmark                                  Time             CPU   Iterations UserCounters...
+--------------------------------------------------------------------------------------------
+baseline_long10MB/iterations:1000        271 ms          271 ms         1000 uniqueWords=651.809k
+baseline_long100MB/iterations:100       4319 ms         4318 ms          100 uniqueWords=6.49327M
+baseline_long1000MB/iterations:10      48606 ms        48603 ms           10 uniqueWords=64.6418M
+2021-08-26T22:21:33+03:00
+Running ./benchmark_customScanning_shortWords
+Run on (12 X 4200.82 MHz CPU s)
+CPU Caches:
+  L1 Data 32 KiB (x6)
+  L1 Instruction 32 KiB (x6)
+  L2 Unified 256 KiB (x6)
+  L3 Unified 12288 KiB (x1)
+Load Average: 1.03, 1.02, 1.00
+-----------------------------------------------------------------------------------
+Benchmark                                         Time             CPU   Iterations
+-----------------------------------------------------------------------------------
+customScanning_short10MB/iterations:1000        544 ms          544 ms         1000
+customScanning_short100MB/iterations:100       6700 ms         6699 ms          100
+customScanning_short1000MB/iterations:10      75685 ms        75683 ms           10
+2021-08-26T22:54:24+03:00
+Running ./benchmark_customScanning_longWords
+Run on (12 X 4163.38 MHz CPU s)
+CPU Caches:
+  L1 Data 32 KiB (x6)
+  L1 Instruction 32 KiB (x6)
+  L2 Unified 256 KiB (x6)
+  L3 Unified 12288 KiB (x1)
+Load Average: 1.00, 1.00, 1.00
+----------------------------------------------------------------------------------
+Benchmark                                        Time             CPU   Iterations
+----------------------------------------------------------------------------------
+customScanning_long10MB/iterations:1000        241 ms          240 ms         1000
+customScanning_long100MB/iterations:100       4109 ms         4109 ms          100
+customScanning_long1000MB/iterations:10      46198 ms        46197 ms           10
+2021-08-26T23:12:57+03:00
+Running ./benchmark_producerConsumer_shortWords
+Run on (12 X 4201.65 MHz CPU s)
+CPU Caches:
+  L1 Data 32 KiB (x6)
+  L1 Instruction 32 KiB (x6)
+  L2 Unified 256 KiB (x6)
+  L3 Unified 12288 KiB (x1)
+Load Average: 1.00, 1.00, 1.00
+------------------------------------------------------------------------------------------
+Benchmark                                                Time             CPU   Iterations
+------------------------------------------------------------------------------------------
+producerConsumer_1cons_short10MB/iterations:250        652 ms          230 ms          250
+producerConsumer_2cons_short10MB/iterations:250        730 ms          214 ms          250
+producerConsumer_4cons_short10MB/iterations:250        718 ms          210 ms          250
+producerConsumer_8cons_short10MB/iterations:250        727 ms          212 ms          250
+producerConsumer_1cons_short100MB/iterations:25       7143 ms         1573 ms           25
+producerConsumer_2cons_short100MB/iterations:25       7352 ms         1541 ms           25
+producerConsumer_4cons_short100MB/iterations:25       7761 ms         1555 ms           25
+producerConsumer_8cons_short100MB/iterations:25       8070 ms         1656 ms           25
+2021-08-26T23:43:59+03:00
+Running ./benchmark_producerConsumer_longWords
+Run on (12 X 4200.56 MHz CPU s)
+CPU Caches:
+  L1 Data 32 KiB (x6)
+  L1 Instruction 32 KiB (x6)
+  L2 Unified 256 KiB (x6)
+  L3 Unified 12288 KiB (x1)
+Load Average: 1.64, 2.08, 2.06
+-----------------------------------------------------------------------------------------
+Benchmark                                               Time             CPU   Iterations
+-----------------------------------------------------------------------------------------
+producerConsumer_1cons_long10MB/iterations:250        327 ms          150 ms          250
+producerConsumer_2cons_long10MB/iterations:250        375 ms          144 ms          250
+producerConsumer_4cons_long10MB/iterations:250        375 ms          137 ms          250
+producerConsumer_8cons_long10MB/iterations:250        382 ms          140 ms          250
+producerConsumer_1cons_long100MB/iterations:25       4695 ms          918 ms           25
+producerConsumer_2cons_long100MB/iterations:25       4963 ms          918 ms           25
+producerConsumer_4cons_long100MB/iterations:25       5472 ms          911 ms           25
+producerConsumer_8cons_long100MB/iterations:25       5536 ms          928 ms           25
+producerConsumer_1cons_long1000MB/iterations:5      52541 ms        10961 ms            5
+producerConsumer_2cons_long1000MB/iterations:5      69891 ms        11655 ms            5
