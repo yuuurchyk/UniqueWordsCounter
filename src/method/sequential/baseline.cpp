@@ -4,7 +4,7 @@
 #include <unordered_set>
 #include <utility>
 
-#include "UniqueWordsCounter/utils/getFile.h"
+#include "UniqueWordsCounter/utils/textFiles.h"
 
 auto UniqueWordsCounter::Sequential::baseline(const char *filename) -> size_t
 {

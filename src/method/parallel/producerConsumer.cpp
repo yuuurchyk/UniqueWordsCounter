@@ -12,7 +12,7 @@
 #include <utility>
 #include <vector>
 
-#include "UniqueWordsCounter/utils/getFile.h"
+#include "UniqueWordsCounter/utils/textFiles.h"
 
 namespace
 {

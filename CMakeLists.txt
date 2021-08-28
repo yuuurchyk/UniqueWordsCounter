@@ -29,14 +29,12 @@ add_library(
     lib_${PROJECT_NAME}
     STATIC
     include/UniqueWordsCounter/methods.h
-    include/UniqueWordsCounter/utils/getFile.h
     include/UniqueWordsCounter/utils/openAddressingSet.h
     include/UniqueWordsCounter/utils/hash.h
     include/UniqueWordsCounter/utils/textFiles.h
     src/method/sequential/baseline.cpp
     src/method/sequential/customScanning.cpp
     src/method/parallel/producerConsumer.cpp
-    src/utils/getFile.cpp
     src/utils/openAddressingSet.cpp
     src/utils/hash/murmur64.cpp
     src/utils/hash/polynomial.cpp
@@ -85,15 +83,10 @@ if(WithBenchmarks)
         benchmark_hashSetsComparison
         benchmarks/hashSetsComparison.cpp
     )
-    add_executable(
-        benchmark_sample
-        benchmarks/sample.cpp
-    )
     list(
         APPEND
         BenchmarkTargets
         benchmark_hashSetsComparison
-        benchmark_sample
     )
 
     foreach(target ${BenchmarkTargets})

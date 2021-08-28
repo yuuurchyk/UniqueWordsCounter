@@ -1,16 +1,12 @@
-#include <functional>
 #include <memory>
-#include <random>
 #include <sstream>
 #include <stdexcept>
 #include <string>
 #include <unordered_set>
-#include <utility>
 #include <vector>
 
 #include <benchmark/benchmark.h>
 
-#include "UniqueWordsCounter/utils/getFile.h"
 #include "UniqueWordsCounter/utils/openAddressingSet.h"
 #include "UniqueWordsCounter/utils/textFiles.h"
 
@@ -27,8 +23,11 @@ public:
 
     void SetUp(const benchmark::State &state)
     {
+        if (words == nullptr || hashes == nullptr || words->size() != hashes->size())
+            throw std::logic_error{ "Error while reading words data" };
+
         const auto wordsRequested = state.range(0);
-        if (wordsRequested < 0)
+        if (wordsRequested < 0 || wordsRequested > words->size())
         {
             std::stringstream errorMessage;
             errorMessage << "Benchmark can be run with at most " << words->size()
@@ -125,34 +124,9 @@ BENCHMARK_REGISTER_F(WordsFixture, BM_open_address_set_of_hashes)
 
 int main(int argc, char **argv)
 {
-    {
-        auto words = new std::vector<std::string>{};
-
-        for (const auto filename :
-             { kSyntheticShortWords100MB, kSyntheticLongWords100MB })
-        {
-            auto file = getFile(filename.c_str());
-            auto word = std::string{};
-
-            while (file >> word)
-                words->push_back(word);
-        }
-
-        std::shuffle(words->begin(), words->end(), std::mt19937{ 47 });
-
-        ::words.reset(words);
-    }
-    {
-        auto hashes = new std::vector<size_t>{};
-        hashes->reserve(words->size());
-
-        auto hashFunctor = std::hash<std::string>{};
-
-        for (const auto &word : *words)
-            hashes->push_back(hashFunctor(word));
-
-        ::hashes.reset(hashes);
-    }
+    words.reset(new std::vector<std::string>{ getWords(
+        { kSyntheticShortWords100MB, kSyntheticLongWords100MB }, /*shuffle*/ true) });
+    hashes.reset(new std::vector<size_t>{ getHashes(*words) });
 
     // expansion of BENCHMARK_MAIN() macro
     ::benchmark::Initialize(&argc, argv);
