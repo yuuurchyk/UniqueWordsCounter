@@ -1,4 +1,4 @@
-#include "textFiles.h"
+#include "UniqueWordsCounter/utils/textFiles.h"
 
 const std::string kDataFolder{ DATA_FOLDER };
 

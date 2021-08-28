@@ -1,6 +1,6 @@
 #include "customScanning.h"
 
-#include "utils/textFiles.h"
+#include "UniqueWordsCounter/utils/textFiles.h"
 
 BENCHMARK_CAPTURE(BM_customScanning,
                   customScanning_long10MB,

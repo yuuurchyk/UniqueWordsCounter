@@ -1,6 +1,6 @@
 #include "baseline.h"
 
-#include "utils/textFiles.h"
+#include "UniqueWordsCounter/utils/textFiles.h"
 
 BENCHMARK_CAPTURE(BM_baseline, baseline_short10MB, kSyntheticShortWords10MB.c_str())
     ->Unit(benchmark::kMillisecond)

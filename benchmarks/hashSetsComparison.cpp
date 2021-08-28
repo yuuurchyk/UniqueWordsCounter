@@ -12,8 +12,7 @@
 
 #include "UniqueWordsCounter/utils/getFile.h"
 #include "UniqueWordsCounter/utils/openAddressingSet.h"
-
-#include "utils/textFiles.h"
+#include "UniqueWordsCounter/utils/textFiles.h"
 
 namespace
 {

@@ -31,14 +31,19 @@ add_library(
     include/UniqueWordsCounter/methods.h
     include/UniqueWordsCounter/utils/getFile.h
     include/UniqueWordsCounter/utils/openAddressingSet.h
+    include/UniqueWordsCounter/utils/hash.h
+    include/UniqueWordsCounter/utils/textFiles.h
     src/method/sequential/baseline.cpp
     src/method/sequential/customScanning.cpp
     src/method/parallel/producerConsumer.cpp
     src/utils/getFile.cpp
     src/utils/openAddressingSet.cpp
+    src/utils/hash/murmur64.cpp
+    src/utils/textFiles.cpp
 )
 target_include_directories(lib_${PROJECT_NAME} PUBLIC include PRIVATE src)
 target_link_libraries(lib_${PROJECT_NAME} PRIVATE ${CMAKE_THREAD_LIBS_INIT} TBB::tbb)
+target_compile_definitions(lib_${PROJECT_NAME} PRIVATE DATA_FOLDER="${CMAKE_CURRENT_SOURCE_DIR}/data")
 
 add_executable(${PROJECT_NAME} examples/uniqueWordsCounter.cpp)
 target_link_libraries(${PROJECT_NAME} PRIVATE lib_${PROJECT_NAME} Boost::program_options)
@@ -56,19 +61,6 @@ set(
 option(WithBenchmarks "Whether to build benchmarks" ON)
 if(WithBenchmarks)
     include(benchmark)
-
-    add_library(
-        benchmarkUtils
-        STATIC
-        benchmarks/utils/textFiles.h
-        benchmarks/utils/textFiles.cpp
-    )
-    list(APPEND Targets benchmarkUtils)
-    target_compile_definitions(
-        benchmarkUtils
-        PRIVATE
-        DATA_FOLDER="${CMAKE_CURRENT_SOURCE_DIR}/data"
-    )
 
     set(BenchmarkTargets "")
 
@@ -108,7 +100,6 @@ if(WithBenchmarks)
             ${target}
             PRIVATE
             lib_${PROJECT_NAME}
-            benchmarkUtils
             benchmark::benchmark
             benchmark::benchmark_main
         )
@@ -126,23 +117,22 @@ option(WithTests "Example of programs related to data structures and algorithms 
 if(WithTests)
     include(googleTest)
 
-    add_executable(
-        test_unorderedSetBuckets
-        tests/unorderedSetBuckets.cpp
-    )
+    foreach(testName hash unorderedSetBuckets)
+        set(targetName test_${testName})
 
-    set(
-        TestTargets
-        test_unorderedSetBuckets
-    )
-    list(APPEND Targets ${TestTargets})
+        add_executable(
+            ${targetName}
+            tests/${testName}.cpp
+        )
 
-    foreach(target ${TestTargets})
         target_link_libraries(
-            ${target}
+            ${targetName}
             PRIVATE
+            lib_${PROJECT_NAME}
             gtest_main
         )
+
+        list(APPEND Targets ${targetName})
     endforeach()
 endif()
 

@@ -1,6 +1,6 @@
 #include "producerConsumer.h"
 
-#include "utils/textFiles.h"
+#include "UniqueWordsCounter/utils/textFiles.h"
 
 BENCHMARK_CAPTURE(BM_producerConsumer,
                   producerConsumer_1cons_long10MB,
