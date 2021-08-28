@@ -39,6 +39,7 @@ add_library(
     src/utils/getFile.cpp
     src/utils/openAddressingSet.cpp
     src/utils/hash/murmur64.cpp
+    src/utils/hash/polynomial.cpp
     src/utils/textFiles.cpp
 )
 target_include_directories(lib_${PROJECT_NAME} PUBLIC include PRIVATE src)

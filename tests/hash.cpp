@@ -31,7 +31,31 @@ TEST(Hash, Murmur64Correctness)
 
         ASSERT_EQ(stdHash, murmurHash)
             << "Word " << word << ": "
-            << ", stdHash=" << stdHash << ", murmurHash=" << murmurHash;
+            << ", stdHash = " << stdHash << ", murmurHash = " << murmurHash;
+    }
+}
+
+TEST(Hash, OptimizedPolynomialHashCorrectness)
+{
+    auto words = std::vector<std::string>{};
+    for (const auto filename : { kSyntheticShortWords100MB, kSyntheticLongWords100MB })
+    {
+        auto file = getFile(filename.c_str());
+        auto word = std::string{};
+
+        while (file >> word)
+            words.push_back(std::move(word));
+    }
+
+    for (const auto &word : words)
+    {
+        const auto trivialValue   = trivialPolynomialHash(word.data(), word.size());
+        const auto optimizedValue = optimizedPolynomialHash(word.data(), word.size());
+
+        ASSERT_EQ(trivialValue, optimizedValue)
+            << "Word " << word << ": "
+            << ", trivialPolynomialHash = " << trivialValue
+            << ", optimizedPolynomialHash = " << optimizedValue;
     }
 }
 
