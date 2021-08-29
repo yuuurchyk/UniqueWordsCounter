@@ -1,6 +1,5 @@
 #include <algorithm>
 #include <cstddef>
-#include <cstdint>
 #include <functional>
 #include <iterator>
 #include <memory>
@@ -9,7 +8,6 @@
 #include <tuple>
 #include <type_traits>
 #include <unordered_map>
-#include <unordered_set>
 #include <utility>
 #include <vector>
 
@@ -99,6 +97,7 @@ TYPED_TEST(HashUniqueness, Collisions)
 
         for (const auto &filename : { kSyntheticLongWords10MB,
                                       kSyntheticLongWords100MB,
+                                      kSyntheticLongWords1000MB,
                                       kSyntheticShortWords10MB,
                                       kSyntheticShortWords100MB,
                                       kSyntheticShortWords1000MB,
