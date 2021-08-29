@@ -78,16 +78,16 @@ if(WithBenchmarks)
         endforeach()
     endforeach()
 
-    # utility benchmarks
-    add_executable(
-        benchmark_hashSetsComparison
-        benchmarks/hashSetsComparison.cpp
-    )
-    list(
-        APPEND
-        BenchmarkTargets
-        benchmark_hashSetsComparison
-    )
+    foreach(utilityBenchmarkName openAddressingSet hash)
+        set(executableName benchmark_${utilityBenchmarkName})
+
+        add_executable(
+            ${executableName}
+            benchmarks/${utilityBenchmarkName}.cpp
+        )
+
+        list(APPEND BenchmarkTargets ${executableName})
+    endforeach()
 
     foreach(target ${BenchmarkTargets})
         target_link_libraries(

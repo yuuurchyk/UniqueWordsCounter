@@ -21,8 +21,10 @@ public:
     std::vector<std::string> fixtureWords;
     std::vector<size_t>      fixtureHashes;
 
-    void SetUp(const benchmark::State &state)
+    void SetUp(const benchmark::State &state) override
     {
+        TearDown(state);
+
         if (words == nullptr || hashes == nullptr || words->size() != hashes->size())
             throw std::logic_error{ "Error while reading words data" };
 
@@ -49,7 +51,7 @@ public:
                     "Hash value conflicts with OpenAddressingSet reserved value"
                 };
     }
-    void TearDown(const benchmark::State &state)
+    void TearDown(const benchmark::State &) override
     {
         fixtureWords.clear();
         fixtureHashes.clear();
