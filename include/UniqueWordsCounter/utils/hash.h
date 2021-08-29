@@ -3,7 +3,7 @@
 #include <cstddef>
 #include <cstdint>
 
-uint64_t murmur64Hash(const char *text, size_t len);
+[[nodiscard]] uint64_t murmur64Hash(const char *text, size_t len);
 
 /**
  * @brief
@@ -14,7 +14,7 @@ uint64_t murmur64Hash(const char *text, size_t len);
  *
  * @note it is assumed that \p text contains only lowercase english letters
  */
-uint32_t trivialPolynomialHash(const char *text, size_t len);
+[[nodiscard]] uint32_t trivialPolynomialHash(const char *text, size_t len);
 
 /**
  * @brief
@@ -25,4 +25,4 @@ uint32_t trivialPolynomialHash(const char *text, size_t len);
  *
  * @note it is assumed that \p text contains only lowercase english letters
  */
-uint32_t optimizedPolynomialHash(const char *text, size_t len);
+[[nodiscard]] uint32_t optimizedPolynomialHash(const char *text, size_t len);

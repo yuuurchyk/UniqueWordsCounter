@@ -5,27 +5,30 @@
 
 namespace
 {
-constexpr uint32_t kMod{ 148102303UL };
-constexpr uint32_t kP{ 29 };
+constexpr uint64_t kMod{ 4294967291ULL };
+constexpr uint64_t kP{ 29 };
 
-constexpr std::array<uint32_t, 5> kPPows{
-    1UL % kMod,
-    kP % kMod,
-    (kP * kP) % kMod,
-    (kP * kP * kP) % kMod,
-    (kP * kP * kP * kP) % kMod,
-};
+static_assert(kMod <= std::numeric_limits<uint32_t>::max(),
+              "Polynomial Hash: mod does not fit into uint32_t");
 
-inline uint32_t characterCode(char character)
+constexpr std::array<uint64_t, 7> kPPows{ 1ULL % kMod,
+                                          kP % kMod,
+                                          (kP * kP) % kMod,
+                                          (kP * kP * kP) % kMod,
+                                          (kP * kP * kP * kP) % kMod,
+                                          (kP * kP * kP * kP * kP) % kMod,
+                                          (kP * kP * kP * kP * kP * kP) % kMod };
+
+inline uint64_t characterCode(char character)
 {
-    return static_cast<uint32_t>(character - 'a' + 1);
+    return static_cast<uint64_t>(character - 'a' + 1);
 }
 
 }    // namespace
 
 uint32_t trivialPolynomialHash(const char *text, size_t len)
 {
-    uint32_t hash{};
+    auto hash = uint64_t{};
 
     for (auto end = text + len; text < end; ++text)
     {
@@ -33,25 +36,27 @@ uint32_t trivialPolynomialHash(const char *text, size_t len)
         hash %= kMod;
     }
 
-    return hash;
+    return static_cast<uint32_t>(hash);
 }
 
 uint32_t optimizedPolynomialHash(const char *text, size_t len)
 {
-    uint64_t hash{};
+    auto hash = uint64_t{};
 
-    auto end = text + len;
+    const auto end = text + len;
 
-    for (; text + 4 < end; text += 4)
+    for (; text + 6 < end; text += 6)
     {
-        hash *= kPPows[4];
+        hash *= kPPows[6];
 
-        uint32_t chunkHash{};
+        auto chunkHash = uint32_t{};
 
-        chunkHash += kPPows[0] * characterCode(text[3]);
-        chunkHash += kPPows[1] * characterCode(text[2]);
-        chunkHash += kPPows[2] * characterCode(text[1]);
-        chunkHash += kPPows[3] * characterCode(text[0]);
+        chunkHash += kPPows[0] * characterCode(text[5]);
+        chunkHash += kPPows[1] * characterCode(text[4]);
+        chunkHash += kPPows[2] * characterCode(text[3]);
+        chunkHash += kPPows[3] * characterCode(text[2]);
+        chunkHash += kPPows[4] * characterCode(text[1]);
+        chunkHash += kPPows[5] * characterCode(text[0]);
 
         hash += chunkHash;
         hash %= kMod;
