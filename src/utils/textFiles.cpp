@@ -1,6 +1,5 @@
 #include "UniqueWordsCounter/utils/textFiles.h"
 
-#include <functional>
 #include <random>
 #include <sstream>
 #include <stdexcept>
@@ -26,6 +25,15 @@ const std::string kSyntheticLongWords1000MB{ kDataFolder +
                                              "/syntheticLongWords1000MB.txt" };
 
 const std::string kEnglishWords{ kDataFolder + "/englishWords.txt" };
+
+const std::initializer_list<std::string> kAllFiles{ kEmpty,
+                                                    kSample,
+                                                    kSyntheticShortWords10MB,
+                                                    kSyntheticLongWords10MB,
+                                                    kSyntheticShortWords100MB,
+                                                    kSyntheticLongWords100MB,
+                                                    kSyntheticShortWords1000MB,
+                                                    kSyntheticLongWords1000MB };
 
 auto getFile(const char *filename) -> std::ifstream
 {
@@ -64,15 +72,19 @@ auto getWords(std::initializer_list<std::string> filenames, bool shuffle)
     return words;
 }
 
-auto getHashes(const std::vector<std::string> &words) -> std::vector<size_t>
+auto getUniqueWords(std::initializer_list<std::string> filenames)
+    -> std::unordered_set<std::string>
 {
-    auto hashes = std::vector<size_t>{};
-    hashes.reserve(words.size());
+    auto uniqueWords = std::unordered_set<std::string>{};
 
-    const auto hashFunctor = std::hash<std::string>{};
+    for (const auto &filename : filenames)
+    {
+        auto file = getFile(filename.c_str());
+        auto word = std::string{};
 
-    for (const auto &word : words)
-        hashes.push_back(hashFunctor(word));
+        while (file >> word)
+            uniqueWords.insert(std::move(word));
+    }
 
-    return hashes;
+    return uniqueWords;
 }

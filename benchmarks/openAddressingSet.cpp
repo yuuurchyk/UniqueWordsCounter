@@ -1,3 +1,4 @@
+#include <functional>
 #include <memory>
 #include <sstream>
 #include <stdexcept>
@@ -128,7 +129,19 @@ int main(int argc, char **argv)
 {
     words.reset(new std::vector<std::string>{ getWords(
         { kSyntheticShortWords100MB, kSyntheticLongWords100MB }, /*shuffle*/ true) });
-    hashes.reset(new std::vector<size_t>{ getHashes(*words) });
+    hashes.reset(
+        []() -> const std::vector<size_t> *
+        {
+            auto hashes = new std::vector<size_t>{};
+            hashes->reserve(words->size());
+
+            const auto hashFunctor = std::hash<std::string>{};
+
+            for (const auto &word : *words)
+                hashes->push_back(hashFunctor(word));
+
+            return hashes;
+        }());
 
     // expansion of BENCHMARK_MAIN() macro
     ::benchmark::Initialize(&argc, argv);

@@ -20,8 +20,7 @@
 
 namespace
 {
-std::unique_ptr<const std::vector<std::string>> words;
-std::unique_ptr<const std::vector<size_t>>      hashes;
+std::unique_ptr<const std::unordered_set<std::string>> uniqueWords;
 
 template <typename T>
 concept HashValue = requires(T)
@@ -40,99 +39,40 @@ using hash_type = std::invoke_result_t<F, const char *, size_t>;
 
 template <typename F>
 requires HashFunction<F>
-auto getHashCollisions(F hashFunction)
-    -> std::unordered_multimap<hash_type<F>, std::string>
+auto getNumberOfAmbiguousHashValues(F hashFunction) -> std::tuple<size_t, std::string>
 {
-    auto collisions = std::unordered_multimap<hash_type<F>, std::string>{};
+    auto uniqueHashes    = std::unordered_set<hash_type<F>>{};
+    auto ambiguousHashes = std::unordered_set<hash_type<F>>{};
 
-    for (const auto &filename : { kSyntheticLongWords10MB,
-                                  kSyntheticLongWords100MB,
-                                  kSyntheticLongWords1000MB,
-                                  kSyntheticShortWords10MB,
-                                  kSyntheticShortWords100MB,
-                                  kSyntheticShortWords1000MB,
-                                  kEnglishWords })
+    for (const auto &word : *uniqueWords)
     {
-        auto file = getFile(filename.c_str());
+        const auto &hash = hashFunction(word.data(), word.size());
 
-        auto word = std::string{};
-        while (file >> word)
-        {
-            const auto &hash = hashFunction(word.data(), word.size());
+        if (ambiguousHashes.find(hash) != ambiguousHashes.end())
+            continue;
 
-            const auto &[l, r] = collisions.equal_range(hash);
-
-            // prevent having equal (key, value) pairs
-            if (std::find_if(
-                    l, r, [&word](const auto &it) { return it.second == word; }) == r)
-                collisions.insert(std::make_pair(hash, std::move(word)));
-        }
+        auto [it, success] = uniqueHashes.insert(hash);
+        if (!success)
+            ambiguousHashes.insert(uniqueHashes.extract(it));
     }
 
-    // leave only keys with multiple values
-    for (auto it = collisions.begin(); it != collisions.end();)
-    {
-        const auto &[l, r] = collisions.equal_range(it->first);
-        it                 = (std::next(l) == r) ? collisions.erase(it) : r;
-    }
+    const auto numberOfAmbiguousHashValues = ambiguousHashes.size();
 
-    return collisions;
-}
+    auto diagnosticMessage = std::stringstream{};
+    diagnosticMessage << "Found " << numberOfAmbiguousHashValues << " hash values";
 
-template <typename Key>
-requires HashValue<Key>
-auto getNumberOfAmbiguousHashValues(
-    const std::unordered_multimap<Key, std::string> &collisions)
-    -> std::tuple<size_t, std::string>
-{
-    auto numberOfAmbiguousHashValues = size_t{};
-    auto errorMessage                = std::stringstream{};
-
-    // number of ambiguous hash values to include in the diagnostic message
-    constexpr auto kErrorMessageThreshold = 20U;
-
-    for (auto it = collisions.begin(); it != collisions.end();)
-    {
-        ++numberOfAmbiguousHashValues;
-
-        const auto &key    = it->first;
-        const auto &[l, r] = collisions.equal_range(key);
-
-        if (numberOfAmbiguousHashValues <= kErrorMessageThreshold)
-        {
-            errorMessage << std::right
-                         << std::setw(std::numeric_limits<Key>::digits10 + 1) << key
-                         << ": ";
-
-            for (auto it = l; it != r; ++it)
-                errorMessage << it->second << "; ";
-            errorMessage << '\n';
-        }
-        else if (numberOfAmbiguousHashValues == kErrorMessageThreshold + 1)
-        {
-            errorMessage << "...\n";
-        }
-
-        it = r;
-    }
-
-    auto errorMessageHeader = std::stringstream{};
-    errorMessageHeader << "Found " << numberOfAmbiguousHashValues
-                       << " ambiguous hash values\n";
-
-    return std::make_tuple(numberOfAmbiguousHashValues,
-                           errorMessageHeader.str() + errorMessage.str());
+    return std::make_tuple(numberOfAmbiguousHashValues, diagnosticMessage.str());
 }
 
 }    // namespace
 
 TEST(HashCorrectness, Murmur64)
 {
-    for (auto i = size_t{}; i < words->size(); ++i)
-    {
-        const auto &word    = (*words)[i];
-        const auto &stdHash = (*hashes)[i];
+    const auto hashFunctor = std::hash<std::string>{};
 
+    for (const auto &word : *uniqueWords)
+    {
+        const auto &stdHash    = hashFunctor(word);
         const auto &murmurHash = murmur64Hash(word.data(), word.size());
 
         ASSERT_EQ(stdHash, murmurHash)
@@ -143,7 +83,7 @@ TEST(HashCorrectness, Murmur64)
 
 TEST(HashCorrectness, OptimizedPolynomialHash)
 {
-    for (const auto &word : *words)
+    for (const auto &word : *uniqueWords)
     {
         const auto &trivialValue   = trivialPolynomialHash(word.data(), word.size());
         const auto &optimizedValue = optimizedPolynomialHash(word.data(), word.size());
@@ -157,20 +97,16 @@ TEST(HashCorrectness, OptimizedPolynomialHash)
 
 TEST(HashUniqueness, NoCollisionsPresent_Murmur64)
 {
-    const auto &collisions = getHashCollisions(&murmur64Hash);
-
     const auto &[numberOfAmbiguousHashValues, diagnosticMessage] =
-        getNumberOfAmbiguousHashValues(collisions);
+        getNumberOfAmbiguousHashValues(&murmur64Hash);
 
     ASSERT_EQ(numberOfAmbiguousHashValues, 0) << diagnosticMessage;
 }
 
 TEST(HashUniqueness, CollisionsPresent_Polynomial32)
 {
-    const auto &collisions = getHashCollisions(&optimizedPolynomialHash);
-
     const auto &[numberOfAmbiguousHashValues, diagnosticMessage] =
-        getNumberOfAmbiguousHashValues(collisions);
+        getNumberOfAmbiguousHashValues(&optimizedPolynomialHash);
 
     if (numberOfAmbiguousHashValues > 0)
         std::cout << diagnosticMessage;
@@ -179,11 +115,8 @@ TEST(HashUniqueness, CollisionsPresent_Polynomial32)
 
 int main(int argc, char **argv)
 {
-    words.reset(new std::vector<std::string>{
-        getWords({ kSyntheticShortWords100MB, kSyntheticLongWords100MB }) });
-    hashes.reset(new std::vector<size_t>{ getHashes(*words) });
-
-    if (words == nullptr || hashes == nullptr || words->size() != hashes->size())
+    uniqueWords.reset(new std::unordered_set<std::string>{ getUniqueWords(kAllFiles) });
+    if (uniqueWords == nullptr)
         throw std::logic_error{ "Error while reading words data" };
 
     ::testing::InitGoogleTest(&argc, argv);
