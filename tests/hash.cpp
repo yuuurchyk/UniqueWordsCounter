@@ -1,13 +1,15 @@
 #include <algorithm>
+#include <concepts>
 #include <cstddef>
-#include <functional>
+#include <iostream>
 #include <iterator>
+#include <limits>
 #include <memory>
 #include <sstream>
 #include <string>
 #include <tuple>
 #include <type_traits>
-#include <unordered_map>
+#include <unordered_set>
 #include <utility>
 #include <vector>
 
@@ -21,22 +23,121 @@ namespace
 std::unique_ptr<const std::vector<std::string>> words;
 std::unique_ptr<const std::vector<size_t>>      hashes;
 
+template <typename T>
+concept HashValue = requires(T)
+{
+    std::is_integral_v<T>;
+};
+template <typename F>
+concept HashFunction = requires(F)
+{
+    std::invocable<F, const char *, size_t>;
+    HashValue<std::invoke_result_t<F, const char *, size_t>>;
+};
+template <typename F>
+requires HashFunction<F>
+using hash_type = std::invoke_result_t<F, const char *, size_t>;
+
+template <typename F>
+requires HashFunction<F>
+auto getHashCollisions(F hashFunction)
+    -> std::unordered_multimap<hash_type<F>, std::string>
+{
+    auto collisions = std::unordered_multimap<hash_type<F>, std::string>{};
+
+    for (const auto &filename : { kSyntheticLongWords10MB,
+                                  kSyntheticLongWords100MB,
+                                  kSyntheticLongWords1000MB,
+                                  kSyntheticShortWords10MB,
+                                  kSyntheticShortWords100MB,
+                                  kSyntheticShortWords1000MB,
+                                  kEnglishWords })
+    {
+        auto file = getFile(filename.c_str());
+
+        auto word = std::string{};
+        while (file >> word)
+        {
+            const auto &hash = hashFunction(word.data(), word.size());
+
+            const auto &[l, r] = collisions.equal_range(hash);
+
+            // prevent having equal (key, value) pairs
+            if (std::find_if(
+                    l, r, [&word](const auto &it) { return it.second == word; }) == r)
+                collisions.insert(std::make_pair(hash, std::move(word)));
+        }
+    }
+
+    // leave only keys with multiple values
+    for (auto it = collisions.begin(); it != collisions.end();)
+    {
+        const auto &[l, r] = collisions.equal_range(it->first);
+        it                 = (std::next(l) == r) ? collisions.erase(it) : r;
+    }
+
+    return collisions;
+}
+
+template <typename Key>
+requires HashValue<Key>
+auto getNumberOfAmbiguousHashValues(
+    const std::unordered_multimap<Key, std::string> &collisions)
+    -> std::tuple<size_t, std::string>
+{
+    auto numberOfAmbiguousHashValues = size_t{};
+    auto errorMessage                = std::stringstream{};
+
+    // number of ambiguous hash values to include in the diagnostic message
+    constexpr auto kErrorMessageThreshold = 20U;
+
+    for (auto it = collisions.begin(); it != collisions.end();)
+    {
+        ++numberOfAmbiguousHashValues;
+
+        const auto &key    = it->first;
+        const auto &[l, r] = collisions.equal_range(key);
+
+        if (numberOfAmbiguousHashValues <= kErrorMessageThreshold)
+        {
+            errorMessage << std::right
+                         << std::setw(std::numeric_limits<Key>::digits10 + 1) << key
+                         << ": ";
+
+            for (auto it = l; it != r; ++it)
+                errorMessage << it->second << "; ";
+            errorMessage << '\n';
+        }
+        else if (numberOfAmbiguousHashValues == kErrorMessageThreshold + 1)
+        {
+            errorMessage << "...\n";
+        }
+
+        it = r;
+    }
+
+    auto errorMessageHeader = std::stringstream{};
+    errorMessageHeader << "Found " << numberOfAmbiguousHashValues
+                       << " ambiguous hash values\n";
+
+    return std::make_tuple(numberOfAmbiguousHashValues,
+                           errorMessageHeader.str() + errorMessage.str());
+}
+
 }    // namespace
 
-// Note: this test is not guaranteed
-// to be cross-platform
 TEST(HashCorrectness, Murmur64)
 {
     for (auto i = size_t{}; i < words->size(); ++i)
     {
-        const auto &word = (*words)[i];
+        const auto &word    = (*words)[i];
+        const auto &stdHash = (*hashes)[i];
 
-        const auto stdHash    = (*hashes)[i];
-        const auto murmurHash = murmur64Hash(word.data(), word.size());
+        const auto &murmurHash = murmur64Hash(word.data(), word.size());
 
         ASSERT_EQ(stdHash, murmurHash)
-            << "Word " << word << ": "
-            << ", stdHash = " << stdHash << ", murmurHash = " << murmurHash;
+            << "Wrong murmur hash for word " << word
+            << ". This test is NOT guaranteed to run successfully on all platforms.";
     }
 }
 
@@ -44,8 +145,8 @@ TEST(HashCorrectness, OptimizedPolynomialHash)
 {
     for (const auto &word : *words)
     {
-        const auto trivialValue   = trivialPolynomialHash(word.data(), word.size());
-        const auto optimizedValue = optimizedPolynomialHash(word.data(), word.size());
+        const auto &trivialValue   = trivialPolynomialHash(word.data(), word.size());
+        const auto &optimizedValue = optimizedPolynomialHash(word.data(), word.size());
 
         ASSERT_EQ(trivialValue, optimizedValue)
             << "Word " << word << ": "
@@ -54,129 +155,26 @@ TEST(HashCorrectness, OptimizedPolynomialHash)
     }
 }
 
-template <typename FunctionPointer_t>
-struct HashImplementation
+TEST(HashUniqueness, NoCollisionsPresent_Murmur64)
 {
-    static_assert(std::is_invocable<FunctionPointer_t, const char *, size_t>::value,
-                  "Template parameter for HashImplementation should be invocable");
+    const auto &collisions = getHashCollisions(&murmur64Hash);
 
-    using HashType       = std::invoke_result_t<FunctionPointer_t, const char *, size_t>;
-    using HashFunction_t = FunctionPointer_t;
-};
-
-struct PolynomialHash : public HashImplementation<decltype(&optimizedPolynomialHash)>
-{
-    static const HashFunction_t HashFunction;
-};
-const PolynomialHash::HashFunction_t PolynomialHash::HashFunction{
-    &optimizedPolynomialHash
-};
-
-struct MurmurHash : public HashImplementation<decltype(&murmur64Hash)>
-{
-    static const HashFunction_t HashFunction;
-};
-const MurmurHash::HashFunction_t MurmurHash::HashFunction{ &murmur64Hash };
-
-template <typename T>
-class HashUniqueness : public ::testing::Test
-{
-};
-
-using HashImplementationTypes = ::testing::Types<MurmurHash, PolynomialHash>;
-TYPED_TEST_SUITE(HashUniqueness, HashImplementationTypes);
-
-TYPED_TEST(HashUniqueness, Collisions)
-{
-    using collisions_t =
-        std::unordered_multimap<typename TypeParam::HashType, std::string>;
-
-    const auto collisions = []() -> collisions_t
-    {
-        auto collisions = collisions_t{};
-
-        for (const auto &filename : { kSyntheticLongWords10MB,
-                                      kSyntheticLongWords100MB,
-                                      kSyntheticLongWords1000MB,
-                                      kSyntheticShortWords10MB,
-                                      kSyntheticShortWords100MB,
-                                      kSyntheticShortWords1000MB,
-                                      kEnglishWords })
-        {
-            auto file = getFile(filename.c_str());
-
-            auto word = std::string{};
-            while (file >> word)
-            {
-                const auto hash = TypeParam::HashFunction(word.data(), word.size());
-
-                auto [l, r] = collisions.equal_range(hash);
-
-                if (std::find_if(
-                        l, r, [&word](const auto &it) { return it.second == word; }) == r)
-                    collisions.insert(std::make_pair(hash, std::move(word)));
-            }
-        }
-
-        // leave only keys with multiple values
-        for (auto it = collisions.begin(); it != collisions.end();)
-        {
-            const auto [l, r] = collisions.equal_range(it->first);
-            if (std::next(l) == r)
-                it = collisions.erase(it);
-            else
-                it = r;
-        }
-
-        return collisions;
-    }();
-
-    const auto [numberOfAmbiguousHashValues,
-                diagnosticMessage] = [&collisions]() -> std::tuple<size_t, std::string>
-    {
-        auto numberOfAmbiguousHashValues = size_t{};
-        auto errorMessage                = std::stringstream{};
-
-        constexpr auto kErrorMessageThreshold = size_t{
-            20
-        };    // number of ambiguous hash values to include in the diagnostic message
-
-        for (auto it = collisions.begin(); it != collisions.end();)
-        {
-            ++numberOfAmbiguousHashValues;
-
-            const auto &key = it->first;
-            auto [l, r]     = collisions.equal_range(key);
-
-            if (numberOfAmbiguousHashValues <= kErrorMessageThreshold)
-            {
-                errorMessage << key << ": ";
-
-                for (; l != r; ++l)
-                    errorMessage << l->second << "; ";
-                errorMessage << '\n';
-            }
-            else if (numberOfAmbiguousHashValues == kErrorMessageThreshold + 1)
-            {
-                errorMessage << "...";
-            }
-
-            it = r;
-        }
-
-        const auto errorMessageHeader = [&numberOfAmbiguousHashValues]() -> std::string
-        {
-            auto errorMessageHeader = std::stringstream{};
-            errorMessageHeader << "Found " << numberOfAmbiguousHashValues
-                               << " ambiguous hash values\n";
-            return errorMessageHeader.str();
-        }();
-
-        return std::make_tuple(numberOfAmbiguousHashValues,
-                               errorMessageHeader + errorMessage.str());
-    }();
+    const auto &[numberOfAmbiguousHashValues, diagnosticMessage] =
+        getNumberOfAmbiguousHashValues(collisions);
 
     ASSERT_EQ(numberOfAmbiguousHashValues, 0) << diagnosticMessage;
+}
+
+TEST(HashUniqueness, CollisionsPresent_Polynomial32)
+{
+    const auto &collisions = getHashCollisions(&optimizedPolynomialHash);
+
+    const auto &[numberOfAmbiguousHashValues, diagnosticMessage] =
+        getNumberOfAmbiguousHashValues(collisions);
+
+    if (numberOfAmbiguousHashValues > 0)
+        std::cout << diagnosticMessage;
+    ASSERT_GT(numberOfAmbiguousHashValues, 0);
 }
 
 int main(int argc, char **argv)
