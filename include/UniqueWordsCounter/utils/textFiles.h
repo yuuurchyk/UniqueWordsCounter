@@ -80,7 +80,7 @@ public:
 private:
     void advance();
 
-    const std::vector<std::string> _files;
+    std::vector<std::string> _files;
 
     std::vector<std::string>::const_iterator _currentFileName;
     std::ifstream                            _currentFile;
