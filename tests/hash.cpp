@@ -9,6 +9,7 @@
 #include <string>
 #include <tuple>
 #include <type_traits>
+#include <unordered_map>
 #include <unordered_set>
 #include <utility>
 #include <vector>
@@ -20,8 +21,6 @@
 
 namespace
 {
-std::unique_ptr<const std::unordered_set<std::string>> uniqueWords;
-
 template <typename T>
 concept HashValue = requires(T)
 {
@@ -41,19 +40,23 @@ template <typename F>
 requires HashFunction<F>
 auto getNumberOfAmbiguousHashValues(F hashFunction) -> std::tuple<size_t, std::string>
 {
-    auto uniqueHashes    = std::unordered_set<hash_type<F>>{};
+    auto uniqueHashes    = std::unordered_map<hash_type<F>, std::string>{};
     auto ambiguousHashes = std::unordered_set<hash_type<F>>{};
 
-    for (const auto &word : *uniqueWords)
+    for (const auto &word : WordsGenerator{ kAllFiles })
     {
         const auto &hash = hashFunction(word.data(), word.size());
 
         if (ambiguousHashes.find(hash) != ambiguousHashes.end())
             continue;
 
-        auto [it, success] = uniqueHashes.insert(hash);
-        if (!success)
-            ambiguousHashes.insert(uniqueHashes.extract(it));
+        auto [it, success] = uniqueHashes.insert({ hash, word });
+
+        if (!success && (word != it->second))
+        {
+            ambiguousHashes.insert(hash);
+            uniqueHashes.erase(it);
+        }
     }
 
     const auto numberOfAmbiguousHashValues = ambiguousHashes.size();
@@ -70,7 +73,7 @@ TEST(HashCorrectness, Murmur64)
 {
     const auto hashFunctor = std::hash<std::string>{};
 
-    for (const auto &word : *uniqueWords)
+    for (const auto &word : WordsGenerator{ kAllFiles })
     {
         const auto &stdHash    = hashFunctor(word);
         const auto &murmurHash = murmur64Hash(word.data(), word.size());
@@ -83,7 +86,7 @@ TEST(HashCorrectness, Murmur64)
 
 TEST(HashCorrectness, OptimizedPolynomialHash)
 {
-    for (const auto &word : *uniqueWords)
+    for (const auto &word : WordsGenerator{ kAllFiles })
     {
         const auto &trivialValue   = trivialPolynomialHash(word.data(), word.size());
         const auto &optimizedValue = optimizedPolynomialHash(word.data(), word.size());
@@ -109,16 +112,12 @@ TEST(HashUniqueness, CollisionsPresent_Polynomial32)
         getNumberOfAmbiguousHashValues(&optimizedPolynomialHash);
 
     if (numberOfAmbiguousHashValues > 0)
-        std::cout << diagnosticMessage;
+        std::cout << diagnosticMessage << std::endl;
     ASSERT_GT(numberOfAmbiguousHashValues, 0);
 }
 
 int main(int argc, char **argv)
 {
-    uniqueWords.reset(new std::unordered_set<std::string>{ getUniqueWords(kAllFiles) });
-    if (uniqueWords == nullptr)
-        throw std::logic_error{ "Error while reading words data" };
-
     ::testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();
 }

@@ -132,6 +132,10 @@ void WordsGenerator::advance()
     else
     {
         ++_currentFileName;
+        if (_currentFileName != _files.end())
+            _currentFile = getFile(_currentFileName->c_str());
+        else
+            _currentFile.close();
         return advance();
     }
 }
