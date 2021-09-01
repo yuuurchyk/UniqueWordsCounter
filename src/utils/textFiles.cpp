@@ -47,6 +47,7 @@ const std::string kEnglishWords{ kDataFolder + "/englishWords.txt" };
 
 const std::initializer_list<std::string> kAllFiles{ kEmpty,
                                                     kSample,
+                                                    kEnglishWords,
                                                     kSyntheticShortWords10MB,
                                                     kSyntheticLongWords10MB,
                                                     kSyntheticShortWords100MB,

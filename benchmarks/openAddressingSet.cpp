@@ -1,4 +1,5 @@
 #include <functional>
+#include <iostream>
 #include <memory>
 #include <sstream>
 #include <stdexcept>
@@ -13,50 +14,38 @@
 
 namespace
 {
-std::unique_ptr<const std::vector<std::string>> words;
-std::unique_ptr<const std::vector<size_t>>      hashes;
-
 class WordsFixture : public benchmark::Fixture
 {
 public:
-    std::vector<std::string> fixtureWords;
-    std::vector<size_t>      fixtureHashes;
+    std::vector<std::string> words;
 
     void SetUp(const benchmark::State &state) override
     {
         TearDown(state);
 
-        if (words == nullptr || hashes == nullptr || words->size() != hashes->size())
-            throw std::logic_error{ "Error while reading words data" };
-
         const auto wordsRequested = state.range(0);
-        if (wordsRequested < 0 || wordsRequested > words->size())
+        if (wordsRequested < 0)
+            throw std::runtime_error{
+                "Benchmark cannot be run with negative number of words"
+            };
+
+        words.reserve(wordsRequested);
+
+        for (const auto &word : WordsGenerator{ kAllFiles })
         {
-            std::stringstream errorMessage;
-            errorMessage << "Benchmark can be run with at most " << words->size()
-                         << " words, requested " << wordsRequested;
+            words.push_back(word);
+            if (words.size() == wordsRequested)
+                break;
         }
 
-        fixtureWords.reserve(wordsRequested);
-        fixtureHashes.reserve(wordsRequested);
-
-        for (auto i = size_t{}; i < wordsRequested; ++i)
+        if (words.size() < wordsRequested)
         {
-            fixtureWords.push_back((*words)[i]);
-            fixtureHashes.push_back((*hashes)[i]);
+            std::cerr << "Warning: " << wordsRequested
+                      << " words requrest, but the benchmark can only be run with "
+                      << words.size() << " words max";
         }
-
-        for (const auto &item : fixtureHashes)
-            if (item == std::numeric_limits<size_t>::max())
-                throw std::runtime_error{
-                    "Hash value conflicts with OpenAddressingSet reserved value"
-                };
     }
-    void TearDown(const benchmark::State &) override
-    {
-        fixtureWords.clear();
-        fixtureHashes.clear();
-    }
+    void TearDown(const benchmark::State &) override { words.clear(); }
 };
 
 BENCHMARK_DEFINE_F(WordsFixture, BM_unordered_set_of_strings)(benchmark::State &state)
@@ -67,8 +56,8 @@ BENCHMARK_DEFINE_F(WordsFixture, BM_unordered_set_of_strings)(benchmark::State &
     {
         auto uniqueWords = std::unordered_set<std::string>{};
 
-        for (auto &item : fixtureWords)
-            uniqueWords.emplace(item.data(), item.size());
+        for (const auto &word : words)
+            uniqueWords.emplace(word.data(), word.size());
 
         benchmark::DoNotOptimize(size = uniqueWords.size());
     }
@@ -76,73 +65,37 @@ BENCHMARK_DEFINE_F(WordsFixture, BM_unordered_set_of_strings)(benchmark::State &
     state.counters["uniqueWords"] = size;
 }
 
-BENCHMARK_DEFINE_F(WordsFixture, BM_unordered_set_of_hashes)(benchmark::State &state)
+BENCHMARK_DEFINE_F(WordsFixture, BM_open_address_set)(benchmark::State &state)
 {
     auto size = size_t{};
 
     for (auto _ : state)
     {
-        auto uniqueHashes = std::unordered_set<size_t>{};
+        auto uniqueWords = OpenAddressingSet{};
 
-        for (const auto &item : fixtureHashes)
-            uniqueHashes.insert(item);
+        for (const auto &word : words)
+            uniqueWords.insert(word.data(), word.size());
 
-        benchmark::DoNotOptimize(size = uniqueHashes.size());
+        benchmark::DoNotOptimize(size = uniqueWords.size());
     }
 
-    state.counters["uniqueHashes"] = size;
-}
-
-BENCHMARK_DEFINE_F(WordsFixture, BM_open_address_set_of_hashes)(benchmark::State &state)
-{
-    auto size = size_t{};
-
-    for (auto _ : state)
-    {
-        auto uniqueHashes = OpenAddressingSet{};
-
-        for (const auto &item : fixtureHashes)
-            uniqueHashes.insert(item);
-
-        benchmark::DoNotOptimize(size = uniqueHashes.size());
-    }
-
-    state.counters["uniqueHashes"] = size;
+    state.counters["uniqueWords"] = size;
 }
 
 }    // namespace
 
 BENCHMARK_REGISTER_F(WordsFixture, BM_unordered_set_of_strings)
     ->RangeMultiplier(1 << 3)
-    ->Range(1 << 12, 1 << 24)
+    ->Range(1 << 12, 1 << 27)
     ->Unit(benchmark::kMillisecond);
-BENCHMARK_REGISTER_F(WordsFixture, BM_unordered_set_of_hashes)
+
+BENCHMARK_REGISTER_F(WordsFixture, BM_open_address_set)
     ->RangeMultiplier(1 << 3)
-    ->Range(1 << 12, 1 << 24)
-    ->Unit(benchmark::kMillisecond);
-BENCHMARK_REGISTER_F(WordsFixture, BM_open_address_set_of_hashes)
-    ->RangeMultiplier(1 << 3)
-    ->Range(1 << 12, 1 << 24)
+    ->Range(1 << 12, 1 << 27)
     ->Unit(benchmark::kMillisecond);
 
 int main(int argc, char **argv)
 {
-    words.reset(new std::vector<std::string>{ getWords(
-        { kSyntheticShortWords100MB, kSyntheticLongWords100MB }, /*shuffle*/ true) });
-    hashes.reset(
-        []() -> const std::vector<size_t> *
-        {
-            auto hashes = new std::vector<size_t>{};
-            hashes->reserve(words->size());
-
-            const auto hashFunctor = std::hash<std::string>{};
-
-            for (const auto &word : *words)
-                hashes->push_back(hashFunctor(word));
-
-            return hashes;
-        }());
-
     // expansion of BENCHMARK_MAIN() macro
     ::benchmark::Initialize(&argc, argv);
     if (::benchmark::ReportUnrecognizedArguments(argc, argv))

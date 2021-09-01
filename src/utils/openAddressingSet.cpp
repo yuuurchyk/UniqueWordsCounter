@@ -1,85 +1,166 @@
 #include "UniqueWordsCounter/utils/openAddressingSet.h"
 
+#include <cstdint>
 #include <cstring>
+#include <limits>
+#include <new>
 #include <utility>
 
-void OpenAddressingSet::allocateBuckets(std::unique_ptr<value_t[]> &target, size_t count)
+#include "UniqueWordsCounter/utils/hash.h"
+
+namespace
 {
-    target.reset(new value_t[count]);
-}
-void OpenAddressingSet::fillBucketsWithReservedValue(value_t *buckets, size_t count)
+class Bucket
 {
-    std::memset(buckets, -1, count * sizeof(value_t));
-}
-size_t OpenAddressingSet::calculateBucketIndex(value_t value)
-{
-    return value & (_capacity - 1);
-}
+public:
+    static constexpr uint8_t kBufferSize{ static_cast<uint8_t>(22) };
 
-OpenAddressingSet::OpenAddressingSet() : _capacity{ kDefaultCapacity }
-{
-    allocateBuckets(_buckets, _capacity);
-    fillBucketsWithReservedValue(_buckets.get(), _capacity);
-}
+    [[nodiscard]] inline bool isOccupied() const noexcept { return _occupied; }
+    inline void               setUnoccupied() noexcept { _occupied = false; }
 
-void OpenAddressingSet::insert(value_t value)
-{
-    // TODO: add SSE intrinsics
+    [[nodiscard]] inline uint64_t    getHash() const noexcept { return _hash; }
+    [[nodiscard]] inline const char *getText() const noexcept { return _buffer; }
+    [[nodiscard]] inline uint8_t     size() const noexcept { return _size; }
 
-    auto bucketsStart = _buckets.get();
-    auto targetBucket = bucketsStart + calculateBucketIndex(value);
-
-    // go to the end
-    auto current    = targetBucket;
-    auto bucketsEnd = bucketsStart + _capacity;
-
-    while (current < bucketsEnd && *current != value && *current != kReservedValue)
-        ++current;
-
-    if (current < bucketsEnd)
+    [[nodiscard]] inline bool compareContent(const char * text,
+                                             const size_t len) const noexcept
     {
-        if (*current == kReservedValue)
-        {
-            *current = value;
-            ++_size;
-        }
-        return;
+        return std::memcmp(text, _buffer, len) == 0 && len == size();
     }
 
-    // go from the beginning
-    current = bucketsStart;
-    while (current < targetBucket && *current != value && *current != kReservedValue)
-        ++current;
-
-    if (current < targetBucket)
+    inline void steal(const Bucket &rhs) noexcept
     {
-        if (*current == kReservedValue)
-        {
-            *current = value;
-            ++_size;
-        }
+        std::memcpy(this, &rhs, sizeof(Bucket));
+    }
+    void assign(uint64_t hash, const char *text, size_t len) noexcept
+    {
+        _hash = hash;
+        setOccupied();
+        setSize(len);
+        std::memcpy(_buffer, text, len);
+    }
+
+private:
+    inline void setOccupied() noexcept { _occupied = true; }
+    inline void setSize(uint8_t size) noexcept { _size = size; }
+
+    uint64_t _hash;
+    char     _buffer[kBufferSize];
+    uint8_t  _size;
+    bool     _occupied;
+};
+
+std::unique_ptr<std::byte[]> allocateBuckets(size_t capacity)
+{
+    static_assert(sizeof(Bucket) == 32, "Wrong assumption about Bucket size");
+    static constexpr std::align_val_t kAlignment{ 32 };
+
+    std::unique_ptr<std::byte[]> bucketsOwner{ new (kAlignment)
+                                                   std::byte[capacity * sizeof(Bucket)] };
+
+    auto bucket = reinterpret_cast<Bucket *>(bucketsOwner.get());
+
+    for (; capacity > 0; --capacity, ++bucket)
+        bucket->setUnoccupied();
+
+    return bucketsOwner;
+}
+
+inline size_t getBucketIndex(uint64_t hash, size_t capacity)
+{
+    return hash & (capacity - 1);
+}
+
+Bucket *findFreeBucket(Bucket *l, Bucket *r, uint64_t hash, const char *text, size_t len)
+{
+skipBuckets:
+    while (l != r && l->isOccupied() && l->getHash() != hash)
+        ++l;
+
+    if (l == r)
+        return r;
+
+    if (!l->isOccupied())
+        return l;
+
+    if (l->compareContent(text, len))
+        return nullptr;
+    else
+    {
+        ++l;
+        goto skipBuckets;
+    }
+}
+
+}    // namespace
+
+OpenAddressingSet::OpenAddressingSet()
+    : _size{}, _capacity{ kDefaultCapacity }, _bucketsOwner{ allocateBuckets(_capacity) }
+{
+}
+
+void OpenAddressingSet::insert(const char *text, size_t len)
+{
+    if (len <= Bucket::kBufferSize) [[likely]]
+    {
+        nativeInsert(text, len);
+        if (nativeSize() + nativeSize() / 8 > _capacity)
+            rehash(_capacity * 2);
     }
     else
     {
-        rehash();
-        insert(value);
+        _longWords.emplace(text, len);
     }
 }
 
-void OpenAddressingSet::rehash()
+void OpenAddressingSet::nativeInsert(const char *text, size_t len)
 {
-    const auto         oldCapacity = _capacity;
-    decltype(_buckets) oldBucketsOwner{ std::move(_buckets) };
+    const auto hash = murmur64Hash(text, len);
 
-    _size = 0;
-    _capacity *= kGrowthFactor;
+    auto l = reinterpret_cast<Bucket *>(_bucketsOwner.get());
+    auto r = l + _capacity;
+    auto m = l + getBucketIndex(hash, _capacity);
 
-    allocateBuckets(_buckets, _capacity);
-    fillBucketsWithReservedValue(_buckets.get(), _capacity);
+    auto bucket = findFreeBucket(m, r, hash, text, len);
+    if (bucket == r)
+        bucket = findFreeBucket(l, m, hash, text, len);
 
-    // no need to check for reserved value, since
-    // all elements in the set are occupied
-    auto oldBuckets = oldBucketsOwner.get();
-    for (auto item = oldBuckets; item < oldBuckets + oldCapacity; ++item)
-        insert(*item);
+    if (bucket != nullptr)
+    {
+        bucket->assign(hash, text, len);
+        ++_size;
+    }
+}
+
+void OpenAddressingSet::rehash(size_t newCapacity)
+{
+    auto newBucketsOwner = allocateBuckets(newCapacity);
+
+    auto newL = reinterpret_cast<Bucket *>(newBucketsOwner.get());
+    auto newR = newL + newCapacity;
+
+    for (auto oldBucket = reinterpret_cast<Bucket *>(_bucketsOwner.get()),
+              r         = oldBucket + _capacity;
+         oldBucket != r;
+         ++oldBucket)
+    {
+        if (!oldBucket->isOccupied())
+            continue;
+
+        auto newM = newL + getBucketIndex(oldBucket->getHash(), newCapacity);
+
+        auto newBucket = findFreeBucket(
+            newM, newR, oldBucket->getHash(), oldBucket->getText(), oldBucket->size());
+        if (newBucket == newR)
+            newBucket = findFreeBucket(newL,
+                                       newM,
+                                       oldBucket->getHash(),
+                                       oldBucket->getText(),
+                                       oldBucket->size());
+
+        newBucket->steal(*oldBucket);
+    }
+
+    _capacity     = newCapacity;
+    _bucketsOwner = std::move(newBucketsOwner);
 }

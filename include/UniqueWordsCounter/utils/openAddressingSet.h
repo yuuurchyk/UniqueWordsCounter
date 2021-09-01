@@ -1,20 +1,13 @@
 #pragma once
 
 #include <cstddef>
-#include <limits>
 #include <memory>
-#include <type_traits>
+#include <string>
+#include <unordered_set>
 
 class OpenAddressingSet
 {
 public:
-    using value_t = size_t;
-
-    static_assert(std::is_integral_v<value_t>,
-                  "OpenAddressMap value type invariant not preserved");
-    static_assert(!std::is_signed_v<value_t>,
-                  "OpenAddressMap value type invariant not preserved");
-
     OpenAddressingSet();
 
     OpenAddressingSet(const OpenAddressingSet &) = delete;
@@ -25,28 +18,40 @@ public:
 
     ~OpenAddressingSet() = default;
 
-    size_t size() const noexcept { return _size; };
-    void   insert(value_t value);
+    void insert(const char *, size_t);
+
+    [[nodiscard]] inline size_t nativeSize() const noexcept { return _size; }
+    [[nodiscard]] inline size_t size() const noexcept
+    {
+        return nativeSize() + _longWords.size();
+    }
+
+    /**
+     * @brief merges contents of \p rhs into *this.
+     *
+     * @param rhs - set to consume the values from
+     *
+     * @note \p rhs is cleared and can be used after the operation
+     */
+    // TODO: implement this method
+    // void consumeAndClear(OpenAddressingSet &rhs);
 
 private:
-    static constexpr size_t kGrowthFactor{ 8 };
+    void nativeInsert(const char *, size_t);
+    void rehash(size_t newCapacity);
+
+    size_t _size;
+    size_t _capacity;
+
+    std::unique_ptr<std::byte[]> _bucketsOwner;
+
+    std::unordered_set<std::string> _longWords;
+
+    static constexpr size_t kGrowthFactor{ 2 };
     static constexpr size_t kDefaultCapacity{ 8 };
 
     static_assert((kGrowthFactor & (kGrowthFactor - 1)) == 0,
                   "Growth factor should be a power of 2");
     static_assert((kDefaultCapacity & (kDefaultCapacity - 1)) == 0,
                   "Default capacity should be a power of 2");
-
-    static constexpr value_t kReservedValue{ std::numeric_limits<value_t>::max() };
-
-    static void allocateBuckets(std::unique_ptr<value_t[]> &target, size_t count);
-    static void fillBucketsWithReservedValue(value_t *buckets, size_t count);
-
-    size_t calculateBucketIndex(value_t value);
-
-    void rehash();
-
-    size_t                     _size{};
-    size_t                     _capacity{ kDefaultCapacity };
-    std::unique_ptr<value_t[]> _buckets{};
 };
