@@ -18,7 +18,8 @@ public:
 
     ~OpenAddressingSet() = default;
 
-    void insert(const char *, size_t);
+    void emplace(const char *, size_t);
+    void insert(std::string &&);
 
     [[nodiscard]] inline size_t nativeSize() const noexcept { return _size; }
     [[nodiscard]] inline size_t size() const noexcept
@@ -37,7 +38,7 @@ public:
     // void consumeAndClear(OpenAddressingSet &rhs);
 
 private:
-    void nativeInsert(const char *, size_t);
+    void nativeEmplace(const char *, size_t);
     void rehash(size_t newCapacity);
 
     size_t _size;

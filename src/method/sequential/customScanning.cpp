@@ -7,15 +7,25 @@
 #include <unordered_set>
 #include <utility>
 
+#include "UniqueWordsCounter/utils/openAddressingSet.h"
 #include "UniqueWordsCounter/utils/textFiles.h"
 
-/**
- * @brief Custom scanning routine over big raw chunks of data read from file.
- *
- * @param filename - name of the file to count unique words in
- * @return size_t - number of unique words in a file pointed by @p filename
- */
-auto UniqueWordsCounter::Sequential::customScanning(const std::string &filename) -> size_t
+namespace
+{
+template <typename T>
+concept HashMap = requires(T t)
+{
+    std::is_default_constructible_v<T>;
+    { t.emplace("a", size_t{ 1 }) };
+    { t.insert(std::string{ "a" }) };
+
+    // clang-format off
+    { t.size() } -> std::same_as<size_t>;
+    // clang-format oon
+};
+
+template<HashMap T>
+auto customScanningImpl(const std::string &filename) -> size_t
 {
     auto file = getFile(filename);
 
@@ -30,7 +40,7 @@ auto UniqueWordsCounter::Sequential::customScanning(const std::string &filename)
 
     auto buffer = arr + 2;
 
-    auto uniqueWords = std::unordered_set<std::string>{};
+    auto uniqueWords = T{};
     auto lastWord    = std::string{};
 
     do
@@ -94,8 +104,20 @@ auto UniqueWordsCounter::Sequential::customScanning(const std::string &filename)
 
     } while (file.gcount() > 0);
 
-    uniqueWords.insert(lastWord);
+    uniqueWords.insert(std::move(lastWord));
     uniqueWords.insert(std::string{});
 
     return uniqueWords.size() - 1;
+}
+
+}    // namespace
+
+auto UniqueWordsCounter::Sequential::customScanning(const std::string &filename) -> size_t
+{
+    return customScanningImpl<std::unordered_set<std::string>>(filename);
+}
+
+auto UniqueWordsCounter::Sequential::optimizedBaseline(const std::string &filename) -> size_t
+{
+    return customScanningImpl<OpenAddressingSet>(filename);
 }

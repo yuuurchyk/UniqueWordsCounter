@@ -16,23 +16,28 @@ TEST(OpenAddressingSet, BasicUsage)
 {
     auto s = OpenAddressingSet{};
 
-    s.insert("a", 1);
+    s.emplace("a", 1);
     ASSERT_EQ(s.size(), 1);
-    s.insert("a", 1);
+    s.emplace("a", 1);
     ASSERT_EQ(s.size(), 1);
 
-    s.insert("bc", 2);
+    s.emplace("bc", 2);
     ASSERT_EQ(s.size(), 2);
 
-    s.insert("a", 1);
+    s.emplace("a", 1);
     ASSERT_EQ(s.size(), 2);
 
-    s.insert("sample1", 7);
+    s.emplace("sample1", 7);
     ASSERT_EQ(s.size(), 3);
-    s.insert("sample1", 7);
+    s.emplace("sample1", 7);
     ASSERT_EQ(s.size(), 3);
 
     ASSERT_EQ(s.nativeSize(), s.size());
+
+    s.insert(std::string{ "a" });
+    ASSERT_EQ(s.size(), 3);
+    s.insert(std::string{ "d" });
+    ASSERT_EQ(s.size(), 4);
 }
 
 TEST(OpenAddressingSet, HeavyUsage)
@@ -47,7 +52,7 @@ TEST(OpenAddressingSet, HeavyUsage)
         ASSERT_EQ(stlSet.size(), openAddressingSet.size());
 
         stlSet.insert(word);
-        openAddressingSet.insert(word.data(), word.size());
+        openAddressingSet.emplace(word.data(), word.size());
     }
 }
 

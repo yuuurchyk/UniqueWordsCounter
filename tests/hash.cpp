@@ -21,23 +21,16 @@
 
 namespace
 {
-template <typename T>
-concept HashValue = requires(T)
-{
-    std::is_integral_v<T>;
-};
 template <typename F>
 concept HashFunction = requires(F)
 {
     std::invocable<F, const char *, size_t>;
-    HashValue<std::invoke_result_t<F, const char *, size_t>>;
+    std::is_integral_v<std::invoke_result_t<F, const char *, size_t>>;
 };
-template <typename F>
-requires HashFunction<F>
+template <HashFunction F>
 using hash_type = std::invoke_result_t<F, const char *, size_t>;
 
-template <typename F>
-requires HashFunction<F>
+template <HashFunction F>
 auto getNumberOfAmbiguousHashValues(F hashFunction) -> std::tuple<size_t, std::string>
 {
     auto uniqueHashes    = std::unordered_map<hash_type<F>, std::string>{};

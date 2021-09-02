@@ -74,7 +74,7 @@ BENCHMARK_DEFINE_F(WordsFixture, BM_open_address_set)(benchmark::State &state)
         auto uniqueWords = OpenAddressingSet{};
 
         for (const auto &word : words)
-            uniqueWords.insert(word.data(), word.size());
+            uniqueWords.emplace(word.data(), word.size());
 
         benchmark::DoNotOptimize(size = uniqueWords.size());
     }

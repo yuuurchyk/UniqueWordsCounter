@@ -99,11 +99,11 @@ OpenAddressingSet::OpenAddressingSet()
 {
 }
 
-void OpenAddressingSet::insert(const char *text, size_t len)
+void OpenAddressingSet::emplace(const char *text, size_t len)
 {
     if (len <= Bucket::kBufferSize) [[likely]]
     {
-        nativeInsert(text, len);
+        nativeEmplace(text, len);
         if (nativeSize() + nativeSize() / 8 > _capacity)
             rehash(_capacity * 2);
     }
@@ -113,7 +113,15 @@ void OpenAddressingSet::insert(const char *text, size_t len)
     }
 }
 
-void OpenAddressingSet::nativeInsert(const char *text, size_t len)
+void OpenAddressingSet::insert(std::string &&s)
+{
+    if (s.size() <= Bucket::kBufferSize) [[likely]]
+        emplace(s.data(), s.size());
+    else
+        _longWords.insert(std::move(s));
+}
+
+void OpenAddressingSet::nativeEmplace(const char *text, size_t len)
 {
     const auto hash = murmur64Hash(text, len);
 

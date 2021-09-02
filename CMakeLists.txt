@@ -64,7 +64,7 @@ if(WithBenchmarks)
     set(BenchmarkTargets "")
 
     # methods benchmarks
-    foreach(method baseline customScanning producerConsumer)
+    foreach(method baseline customScanning optimizedBaseline producerConsumer)
         foreach(words short long)
             set(executableName benchmark_${method}_${words}Words)
 

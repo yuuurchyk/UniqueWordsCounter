@@ -21,7 +21,9 @@ namespace UniqueWordsCounter
 namespace UniqueWordsCounter::Sequential
 {
 auto baseline(const std::string &filename) -> size_t;
+
 auto customScanning(const std::string &filename) -> size_t;
+auto optimizedBaseline(const std::string &fiename) -> size_t;
 
 }    // namespace UniqueWordsCounter::Sequential
 
