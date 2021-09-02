@@ -75,12 +75,12 @@ auto main(int argc, char **argv) -> int
     auto result = size_t{};
 
     if (method == kBaseline)
-        result = UniqueWordsCounter::Sequential::baseline(filepath.c_str());
+        result = UniqueWordsCounter::Sequential::baseline(filepath);
     else if (method == kCustomScanning)
-        result = UniqueWordsCounter::Sequential::customScanning(filepath.c_str());
+        result = UniqueWordsCounter::Sequential::customScanning(filepath);
     else if (method == kProducerConsumer)
         result = UniqueWordsCounter::Parallel::producerConsumer(
-            filepath.c_str(), std::max(0U, std::thread::hardware_concurrency()));
+            filepath, std::max(0U, std::thread::hardware_concurrency()));
     else
         throw std::runtime_error{ "Invalid method: " + method };
 

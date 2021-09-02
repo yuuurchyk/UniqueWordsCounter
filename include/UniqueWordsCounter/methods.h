@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstddef>
+#include <string>
 
 /**
  * @brief Contains methods for determining number of unique words in the file.
@@ -19,13 +20,13 @@ namespace UniqueWordsCounter
 
 namespace UniqueWordsCounter::Sequential
 {
-auto baseline(const char *filename) -> size_t;
-auto customScanning(const char *filename) -> size_t;
+auto baseline(const std::string &filename) -> size_t;
+auto customScanning(const std::string &filename) -> size_t;
 
 }    // namespace UniqueWordsCounter::Sequential
 
 namespace UniqueWordsCounter::Parallel
 {
-auto producerConsumer(const char *filename, size_t consumersNum) -> size_t;
+auto producerConsumer(const std::string &filename, size_t consumersNum) -> size_t;
 
 }    // namespace UniqueWordsCounter::Parallel

@@ -26,7 +26,7 @@ extern const std::string kEnglishWords;
 
 extern const std::initializer_list<std::string> kAllFiles;
 
-auto getFile(const char *filename) -> std::ifstream;
+auto getFile(const std::string &filename) -> std::ifstream;
 
 auto getWords(std::initializer_list<std::string> filenames, bool shuffle = false)
     -> std::vector<std::string>;

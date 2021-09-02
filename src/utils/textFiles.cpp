@@ -8,11 +8,8 @@
 
 namespace
 {
-void checkFilenameValid(const char *filename)
+void checkFilenameValid(const std::string &filename)
 {
-    if (filename == nullptr)
-        throw std::runtime_error{ "Filename cannot be nullptr" };
-
     if (!std::filesystem::is_regular_file(filename))
     {
         auto errorMessage = std::stringstream{};
@@ -55,7 +52,7 @@ const std::initializer_list<std::string> kAllFiles{ kEmpty,
                                                     kSyntheticShortWords1000MB,
                                                     kSyntheticLongWords1000MB };
 
-auto getFile(const char *filename) -> std::ifstream
+auto getFile(const std::string &filename) -> std::ifstream
 {
     checkFilenameValid(filename);
 

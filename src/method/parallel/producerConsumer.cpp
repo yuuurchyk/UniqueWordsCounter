@@ -6,7 +6,6 @@
 #include <mutex>
 #include <optional>
 #include <stdexcept>
-#include <string>
 #include <thread>
 #include <unordered_set>
 #include <utility>
@@ -40,8 +39,8 @@ struct ThreadSafeContainer
  * the value of too big, it is reduced to (hardware_concurrency - 2)
  * @return size_t - number of unique words in a file pointed by @p filename
  */
-auto UniqueWordsCounter::Parallel::producerConsumer(const char *filename,
-                                                    size_t      consumersNum) -> size_t
+auto UniqueWordsCounter::Parallel::producerConsumer(const std::string &filename,
+                                                    size_t consumersNum) -> size_t
 {
     auto file = getFile(filename);
 

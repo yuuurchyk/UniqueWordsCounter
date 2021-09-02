@@ -4,8 +4,6 @@
 #include <cstring>
 #include <functional>
 #include <memory>
-#include <string>
-#include <string_view>
 #include <unordered_set>
 #include <utility>
 
@@ -17,7 +15,7 @@
  * @param filename - name of the file to count unique words in
  * @return size_t - number of unique words in a file pointed by @p filename
  */
-auto UniqueWordsCounter::Sequential::customScanning(const char *filename) -> size_t
+auto UniqueWordsCounter::Sequential::customScanning(const std::string &filename) -> size_t
 {
     auto file = getFile(filename);
 
