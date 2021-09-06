@@ -64,18 +64,16 @@ if(WithBenchmarks)
     set(BenchmarkTargets "")
 
     # methods benchmarks
-    foreach(method baseline customScanning optimizedBaseline producerConsumer)
-        foreach(words short long)
-            set(executableName benchmark_${method}_${words}Words)
+    foreach(words short long)
+        set(executableName benchmark_${words}Words)
 
-            add_executable(
-                ${executableName}
-                benchmarks/method/${method}.h
-                benchmarks/method/${method}_${words}Words.cpp
-            )
+        add_executable(
+            ${executableName}
+            benchmarks/method.h
+            benchmarks/${words}Words.cpp
+        )
 
-            list(APPEND BenchmarkTargets ${executableName})
-        endforeach()
+        list(APPEND BenchmarkTargets ${executableName})
     endforeach()
 
     foreach(utilityBenchmarkName openAddressingSet hash)
