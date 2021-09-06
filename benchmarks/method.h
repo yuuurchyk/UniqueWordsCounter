@@ -31,38 +31,25 @@
         ->Iterations(Iterations_)                                                       \
         ->Name(_BENCHMARK_NAME1_S(Method_, Words_, Size_, Arg1Name_, Arg1Value_))
 
-template <class... Args>
-void BM_baseline(benchmark::State &state, Args &&...args)
-{
-    size_t result{};
+// clang-format off
+#define REGISTER_BENCHMARK_FUNCTION(MethodName_, FunctionName_)                       \
+    template <class... Args>                                                          \
+    void BM_##MethodName_                                                             \
+    (benchmark::State &state, Args &&...args)                                         \
+    {                                                                                 \
+        size_t result{};                                                              \
+        for (auto _ : state)                                                          \
+            benchmark::DoNotOptimize(result =                                         \
+            FunctionName_                                                             \
+            (std::forward<Args>(args)...));                                           \
+        state.counters["uniqueWords"] = result;                                       \
+    }
+// clang-format on
 
-    for (auto _ : state)
-        benchmark::DoNotOptimize(result = UniqueWordsCounter::Sequential::baseline(
-                                     std::forward<Args>(args)...));
-
-    state.counters["uniqueWords"] = result;
-}
-
-template <class... Args>
-void BM_customScanning(benchmark::State &state, Args &&...args)
-{
-    for (auto _ : state)
-        benchmark::DoNotOptimize(
-            UniqueWordsCounter::Sequential::customScanning(std::forward<Args>(args)...));
-}
-
-template <class... Args>
-void BM_optimizedBaseline(benchmark::State &state, Args &&...args)
-{
-    for (auto _ : state)
-        benchmark::DoNotOptimize(UniqueWordsCounter::Sequential::optimizedBaseline(
-            std::forward<Args>(args)...));
-}
-
-template <class... Args>
-void BM_producerConsumer(benchmark::State &state, Args &&...args)
-{
-    for (auto _ : state)
-        benchmark::DoNotOptimize(
-            UniqueWordsCounter::Parallel::producerConsumer(std::forward<Args>(args)...));
-}
+REGISTER_BENCHMARK_FUNCTION(baseline, UniqueWordsCounter::Sequential::baseline)
+REGISTER_BENCHMARK_FUNCTION(customScanning,
+                            UniqueWordsCounter::Sequential::customScanning)
+REGISTER_BENCHMARK_FUNCTION(optimizedBaseline,
+                            UniqueWordsCounter::Sequential::optimizedBaseline)
+REGISTER_BENCHMARK_FUNCTION(producerConsumer,
+                            UniqueWordsCounter::Parallel::producerConsumer)
