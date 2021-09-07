@@ -13,6 +13,8 @@ namespace
 class Bucket
 {
 public:
+    Bucket() = default;
+
     static constexpr uint8_t kBufferSize{ static_cast<uint8_t>(22) };
 
     [[nodiscard]] inline bool isOccupied() const noexcept { return _occupied; }
@@ -47,7 +49,7 @@ private:
     uint64_t _hash;
     char     _buffer[kBufferSize];
     uint8_t  _size;
-    bool     _occupied;
+    bool     _occupied{};
 };
 
 std::unique_ptr<std::byte[]> allocateBuckets(size_t capacity)

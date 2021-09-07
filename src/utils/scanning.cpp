@@ -107,6 +107,9 @@ void bufferScanning(const Buffer &                            buffer,
         wordCallback(start, static_cast<size_t>(nextSpace - start));
 
         start = nextSpace + 1;
-        [[unlikely]] while (std::isspace(*start))++ start;
+        while (std::isspace(*start))
+        {
+            [[unlikely]]++ start;
+        }
     }
 }
