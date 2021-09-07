@@ -3,6 +3,7 @@
 #include <unordered_set>
 #include <utility>
 
+#include "UniqueWordsCounter/utils/scanning.h"
 #include "UniqueWordsCounter/utils/textFiles.h"
 
 auto UniqueWordsCounter::Sequential::baseline(const std::string &filename) -> size_t
@@ -11,8 +12,9 @@ auto UniqueWordsCounter::Sequential::baseline(const std::string &filename) -> si
 
     auto uniqueWords = std::unordered_set<std::string>{};
 
-    for (auto word = std::string{}; file >> word;)
-        uniqueWords.insert(std::move(word));
+    wordsScanning(file,
+                  [&uniqueWords](std::string &&word)
+                  { uniqueWords.insert(std::move(word)); });
 
     return uniqueWords.size();
 }
