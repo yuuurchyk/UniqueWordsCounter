@@ -29,16 +29,6 @@ void UniqueWordsCounter::Utils::Scanning::Buffer::read(std::ifstream &file)
     _data[size() + 2] = '\0';
 }
 
-void UniqueWordsCounter::Utils::Scanning::wordsScanning(
-    std::ifstream &                     file,
-    std::function<void(std::string &&)> wordCallback)
-{
-    auto word = std::string{};
-
-    while (file >> word)
-        wordCallback(std::move(word));
-}
-
 void UniqueWordsCounter::Utils::Scanning::bufferScanning(
     const Buffer &                            buffer,
     std::string                               lastWordFromPreviousChunk,

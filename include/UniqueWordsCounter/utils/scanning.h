@@ -36,7 +36,6 @@ private:
     char *                  _data;
 };
 
-void wordsScanning(std::ifstream &, std::function<void(std::string &&)> wordCallback);
 void bufferScanning(const Buffer &,
                     std::string                               lastWordFromPreviousChunk,
                     std::function<void(const char *, size_t)> wordCallback,
