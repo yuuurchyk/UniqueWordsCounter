@@ -111,7 +111,7 @@ option(WithTests "Example of programs related to data structures and algorithms 
 if(WithTests)
     include(googleTest)
 
-    foreach(testName hash unorderedSetBuckets openAddressingSet)
+    foreach(testName hash unorderedSetBuckets openAddressingSet methodsCorrectness)
         set(targetName test_${testName})
 
         add_executable(
