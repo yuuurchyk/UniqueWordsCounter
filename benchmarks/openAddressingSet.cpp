@@ -21,6 +21,8 @@ public:
 
     void SetUp(const benchmark::State &state) override
     {
+        using namespace UniqueWordsCounter::Utils::TextFiles;
+
         TearDown(state);
 
         const auto wordsRequested = state.range(0);
@@ -71,7 +73,7 @@ BENCHMARK_DEFINE_F(WordsFixture, BM_open_address_set)(benchmark::State &state)
 
     for (auto _ : state)
     {
-        auto uniqueWords = OpenAddressingSet{};
+        auto uniqueWords = UniqueWordsCounter::Utils::OpenAddressingSet{};
 
         for (const auto &word : words)
             uniqueWords.emplace(word.data(), word.size());

@@ -8,13 +8,13 @@
 
 TEST(OpenAddressingSet, Instantiation)
 {
-    auto s = OpenAddressingSet{};
+    auto s = UniqueWordsCounter::Utils::OpenAddressingSet{};
     ASSERT_EQ(s.size(), 0);
 }
 
 TEST(OpenAddressingSet, BasicUsage)
 {
-    auto s = OpenAddressingSet{};
+    auto s = UniqueWordsCounter::Utils::OpenAddressingSet{};
 
     s.emplace("a", 1);
     ASSERT_EQ(s.size(), 1);
@@ -42,8 +42,10 @@ TEST(OpenAddressingSet, BasicUsage)
 
 TEST(OpenAddressingSet, HeavyUsage)
 {
+    using namespace UniqueWordsCounter::Utils::TextFiles;
+
     auto stlSet            = std::unordered_set<std::string>{};
-    auto openAddressingSet = OpenAddressingSet{};
+    auto openAddressingSet = UniqueWordsCounter::Utils::OpenAddressingSet{};
 
     for (const auto &word :
          getWords({ kSyntheticShortWords100MB, kSyntheticLongWords100MB, kEnglishWords },

@@ -10,6 +10,8 @@
 
 namespace
 {
+using namespace UniqueWordsCounter::Utils::Hash;
+
 class HashFixture : public benchmark::Fixture
 {
 public:
@@ -53,29 +55,27 @@ private:
 BENCHMARK_DEFINE_F(HashFixture, BM_Murmur64)(benchmark::State &state)
 {
     for (auto _ : state)
-        benchmark::DoNotOptimize(murmur64Hash(text, len));
+        benchmark::DoNotOptimize(murmur64(text, len));
 }
 
-BENCHMARK_DEFINE_F(HashFixture, BM_TrivialPolynomial32)(benchmark::State &state)
+BENCHMARK_DEFINE_F(HashFixture, BM_Polynomial32_trivial)(benchmark::State &state)
 {
     for (auto _ : state)
-        benchmark::DoNotOptimize(trivialPolynomialHash(text, len));
+        benchmark::DoNotOptimize(polynomial32_trivial(text, len));
 }
 
-BENCHMARK_DEFINE_F(HashFixture, BM_OptimizedPolynomial32)(benchmark::State &state)
+BENCHMARK_DEFINE_F(HashFixture, BM_Polynomial32)(benchmark::State &state)
 {
     for (auto _ : state)
-        benchmark::DoNotOptimize(optimizedPolynomialHash(text, len));
+        benchmark::DoNotOptimize(polynomial32(text, len));
 }
 
 }    // namespace
 
 BENCHMARK_REGISTER_F(HashFixture, BM_Murmur64)->RangeMultiplier(2)->Range(1, 64);
-BENCHMARK_REGISTER_F(HashFixture, BM_TrivialPolynomial32)
+BENCHMARK_REGISTER_F(HashFixture, BM_Polynomial32_trivial)
     ->RangeMultiplier(2)
     ->Range(1, 64);
-BENCHMARK_REGISTER_F(HashFixture, BM_OptimizedPolynomial32)
-    ->RangeMultiplier(2)
-    ->Range(1, 64);
+BENCHMARK_REGISTER_F(HashFixture, BM_Polynomial32)->RangeMultiplier(2)->Range(1, 64);
 
 BENCHMARK_MAIN();

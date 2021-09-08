@@ -14,21 +14,15 @@
  * For more details, read the documentation on the concrete method.
  */
 // TODO: add info on the best method
-namespace UniqueWordsCounter
+namespace UniqueWordsCounter::Method
 {
-}
-
-namespace UniqueWordsCounter::Sequential
-{
+/* Sequential */
 auto baseline(const std::string &filename) -> size_t;
 
 auto customScanning(const std::string &filename) -> size_t;
 auto optimizedBaseline(const std::string &fiename) -> size_t;
 
-}    // namespace UniqueWordsCounter::Sequential
-
-namespace UniqueWordsCounter::Parallel
-{
+/* Parallel */
 auto producerConsumer(const std::string &filename, size_t consumersNum) -> size_t;
 
-}    // namespace UniqueWordsCounter::Parallel
+}    // namespace UniqueWordsCounter::Method

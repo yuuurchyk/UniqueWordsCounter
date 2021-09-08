@@ -4,7 +4,7 @@
 #include <stdexcept>
 #include <utility>
 
-Buffer::Buffer(const size_t capacity)
+UniqueWordsCounter::Utils::Scanning::Buffer::Buffer(const size_t capacity)
     : _capacity{ capacity }, _buffer{ new char[capacity + 6] }, _data{ _buffer.get() + 3 }
 {
     if (_capacity == 0)
@@ -19,7 +19,7 @@ Buffer::Buffer(const size_t capacity)
     _data[2] = '\0';
 }
 
-void Buffer::read(std::ifstream &file)
+void UniqueWordsCounter::Utils::Scanning::Buffer::read(std::ifstream &file)
 {
     file.read(_data, _capacity);
     _size = file.gcount();
@@ -29,7 +29,9 @@ void Buffer::read(std::ifstream &file)
     _data[size() + 2] = '\0';
 }
 
-void wordsScanning(std::ifstream &file, std::function<void(std::string &&)> wordCallback)
+void UniqueWordsCounter::Utils::Scanning::wordsScanning(
+    std::ifstream &                     file,
+    std::function<void(std::string &&)> wordCallback)
 {
     auto word = std::string{};
 
@@ -37,10 +39,11 @@ void wordsScanning(std::ifstream &file, std::function<void(std::string &&)> word
         wordCallback(std::move(word));
 }
 
-void bufferScanning(const Buffer &                            buffer,
-                    std::string                               lastWordFromPreviousChunk,
-                    std::function<void(const char *, size_t)> wordCallback,
-                    std::function<void(std::string &&)>       lastWordCallback)
+void UniqueWordsCounter::Utils::Scanning::bufferScanning(
+    const Buffer &                            buffer,
+    std::string                               lastWordFromPreviousChunk,
+    std::function<void(const char *, size_t)> wordCallback,
+    std::function<void(std::string &&)>       lastWordCallback)
 {
     static constexpr const char *kSpaceCharacters{ " \n\t\r\f\v" };
 

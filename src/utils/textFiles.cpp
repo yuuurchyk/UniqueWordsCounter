@@ -21,38 +21,52 @@ void checkFilenameValid(const std::string &filename)
 
 }    // namespace
 
-const std::string kDataFolder{ DATA_FOLDER };
+const std::string UniqueWordsCounter::Utils::TextFiles::kDataFolder{ DATA_FOLDER };
 
-const std::string kEmpty{ kDataFolder + "/empty.txt" };
-const std::string kSample{ kDataFolder + "/sample.txt" };
+const std::string UniqueWordsCounter::Utils::TextFiles::kEmpty{ kDataFolder +
+                                                                "/empty.txt" };
+const std::string UniqueWordsCounter::Utils::TextFiles::kSample{ kDataFolder +
+                                                                 "/sample.txt" };
 
-const std::string kSyntheticShortWords10MB{ kDataFolder +
-                                            "/syntheticShortWords10MB.txt" };
-const std::string kSyntheticLongWords10MB{ kDataFolder + "/syntheticLongWords10MB.txt" };
+const std::string UniqueWordsCounter::Utils::TextFiles::kSyntheticShortWords10MB{
+    kDataFolder + "/syntheticShortWords10MB.txt"
+};
+const std::string UniqueWordsCounter::Utils::TextFiles::kSyntheticLongWords10MB{
+    kDataFolder + "/syntheticLongWords10MB.txt"
+};
 
-const std::string kSyntheticShortWords100MB{ kDataFolder +
-                                             "/syntheticShortWords100MB.txt" };
-const std::string kSyntheticLongWords100MB{ kDataFolder +
-                                            "/syntheticLongWords100MB.txt" };
+const std::string UniqueWordsCounter::Utils::TextFiles::kSyntheticShortWords100MB{
+    kDataFolder + "/syntheticShortWords100MB.txt"
+};
+const std::string UniqueWordsCounter::Utils::TextFiles::kSyntheticLongWords100MB{
+    kDataFolder + "/syntheticLongWords100MB.txt"
+};
 
-const std::string kSyntheticShortWords1000MB{ kDataFolder +
-                                              "/syntheticShortWords1000MB.txt" };
-const std::string kSyntheticLongWords1000MB{ kDataFolder +
-                                             "/syntheticLongWords1000MB.txt" };
+const std::string UniqueWordsCounter::Utils::TextFiles::kSyntheticShortWords1000MB{
+    kDataFolder + "/syntheticShortWords1000MB.txt"
+};
+const std::string UniqueWordsCounter::Utils::TextFiles::kSyntheticLongWords1000MB{
+    kDataFolder + "/syntheticLongWords1000MB.txt"
+};
 
-const std::string kEnglishWords{ kDataFolder + "/englishWords.txt" };
+const std::string UniqueWordsCounter::Utils::TextFiles::kEnglishWords{
+    kDataFolder + "/englishWords.txt"
+};
 
-const std::initializer_list<std::string> kAllFiles{ kEmpty,
-                                                    kSample,
-                                                    kEnglishWords,
-                                                    kSyntheticShortWords10MB,
-                                                    kSyntheticLongWords10MB,
-                                                    kSyntheticShortWords100MB,
-                                                    kSyntheticLongWords100MB,
-                                                    kSyntheticShortWords1000MB,
-                                                    kSyntheticLongWords1000MB };
+const std::initializer_list<std::string> UniqueWordsCounter::Utils::TextFiles::kAllFiles{
+    kEmpty,
+    kSample,
+    kEnglishWords,
+    kSyntheticShortWords10MB,
+    kSyntheticLongWords10MB,
+    kSyntheticShortWords100MB,
+    kSyntheticLongWords100MB,
+    kSyntheticShortWords1000MB,
+    kSyntheticLongWords1000MB
+};
 
-auto getFile(const std::string &filename) -> std::ifstream
+auto UniqueWordsCounter::Utils::TextFiles::getFile(const std::string &filename)
+    -> std::ifstream
 {
     checkFilenameValid(filename);
 
@@ -68,8 +82,9 @@ auto getFile(const std::string &filename) -> std::ifstream
     return file;
 }
 
-auto getWords(std::initializer_list<std::string> filenames, bool shuffle)
-    -> std::vector<std::string>
+auto UniqueWordsCounter::Utils::TextFiles::getWords(
+    std::initializer_list<std::string> filenames,
+    bool                               shuffle) -> std::vector<std::string>
 {
     auto words = std::vector<std::string>{};
 
@@ -88,8 +103,8 @@ auto getWords(std::initializer_list<std::string> filenames, bool shuffle)
     return words;
 }
 
-auto getUniqueWords(std::initializer_list<std::string> filenames)
-    -> std::unordered_set<std::string>
+auto UniqueWordsCounter::Utils::TextFiles::getUniqueWords(
+    std::initializer_list<std::string> filenames) -> std::unordered_set<std::string>
 {
     auto uniqueWords = std::unordered_set<std::string>{};
 
@@ -105,7 +120,8 @@ auto getUniqueWords(std::initializer_list<std::string> filenames)
     return uniqueWords;
 }
 
-WordsGenerator::WordsGenerator(std::initializer_list<std::string> files)
+UniqueWordsCounter::Utils::TextFiles::WordsGenerator::WordsGenerator(
+    std::initializer_list<std::string> files)
     : _files{ files.begin(), files.end() }, _currentFileName{ _files.begin() }
 {
     for (const auto &filename : _files)
@@ -117,7 +133,7 @@ WordsGenerator::WordsGenerator(std::initializer_list<std::string> files)
     advance();
 }
 
-void WordsGenerator::advance()
+void UniqueWordsCounter::Utils::TextFiles::WordsGenerator::advance()
 {
     if (_currentFileName == _files.end())
         return _word.clear();
@@ -138,7 +154,9 @@ void WordsGenerator::advance()
     }
 }
 
-WordsGenerator::iterator::iterator(WordsGenerator *instance) : _instance{ instance }
+UniqueWordsCounter::Utils::TextFiles::WordsGenerator::iterator::iterator(
+    WordsGenerator *instance)
+    : _instance{ instance }
 {
     if (_instance != nullptr)
     {
@@ -147,7 +165,8 @@ WordsGenerator::iterator::iterator(WordsGenerator *instance) : _instance{ instan
     }
 }
 
-bool WordsGenerator::iterator::operator==(const iterator &rhs) const
+bool UniqueWordsCounter::Utils::TextFiles::WordsGenerator::iterator::operator==(
+    const iterator &rhs) const
 {
     if (_word.empty() && rhs._word.empty())
         return true;
@@ -155,7 +174,8 @@ bool WordsGenerator::iterator::operator==(const iterator &rhs) const
     return _wordCounter == rhs._wordCounter;
 }
 
-WordsGenerator::iterator &WordsGenerator::iterator::operator++()
+auto UniqueWordsCounter::Utils::TextFiles::WordsGenerator::iterator::operator++()
+    -> iterator &
 {
     if (_instance != nullptr)
     {
@@ -168,19 +188,20 @@ WordsGenerator::iterator &WordsGenerator::iterator::operator++()
     return *this;
 }
 
-WordsGenerator::iterator WordsGenerator::iterator::operator++(int)
+auto UniqueWordsCounter::Utils::TextFiles::WordsGenerator::iterator::operator++(int)
+    -> iterator
 {
     auto self = (*this);
     ++(*this);
     return self;
 }
 
-WordsGenerator::iterator WordsGenerator::begin()
+auto UniqueWordsCounter::Utils::TextFiles::WordsGenerator::begin() -> iterator
 {
     return iterator{ this };
 }
 
-WordsGenerator::iterator WordsGenerator::end()
+auto UniqueWordsCounter::Utils::TextFiles::WordsGenerator::end() -> iterator
 {
     return iterator{};
 }

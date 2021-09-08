@@ -31,7 +31,7 @@ inline uint64_t shift_mix(uint64_t v)
 
 }    // namespace
 
-uint64_t murmur64Hash(const char *text, size_t len)
+uint64_t UniqueWordsCounter::Utils::Hash::murmur64(const char *text, size_t len)
 {
     static constexpr uint64_t mul{ (static_cast<uint64_t>(0xc6a4a793UL) << 32UL) +
                                    static_cast<uint64_t>(0x5bd1e995UL) };

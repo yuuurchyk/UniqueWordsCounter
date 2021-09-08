@@ -39,10 +39,10 @@ struct ThreadSafeContainer
  * the value of too big, it is reduced to (hardware_concurrency - 2)
  * @return size_t - number of unique words in a file pointed by @p filename
  */
-auto UniqueWordsCounter::Parallel::producerConsumer(const std::string &filename,
-                                                    size_t consumersNum) -> size_t
+auto UniqueWordsCounter::Method::producerConsumer(const std::string &filename,
+                                                  size_t consumersNum) -> size_t
 {
-    auto file = getFile(filename);
+    auto file = Utils::TextFiles::getFile(filename);
 
     if (consumersNum == 0)
         throw std::runtime_error{ "There should be at least one consumer" };

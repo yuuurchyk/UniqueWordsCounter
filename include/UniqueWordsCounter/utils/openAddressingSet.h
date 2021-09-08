@@ -5,6 +5,8 @@
 #include <string>
 #include <unordered_set>
 
+namespace UniqueWordsCounter::Utils
+{
 class OpenAddressingSet
 {
 public:
@@ -56,3 +58,5 @@ private:
     static_assert((kDefaultCapacity & (kDefaultCapacity - 1)) == 0,
                   "Default capacity should be a power of 2");
 };
+
+}    // namespace UniqueWordsCounter::Utils

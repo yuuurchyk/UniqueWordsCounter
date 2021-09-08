@@ -8,6 +8,8 @@
 #include <unordered_set>
 #include <vector>
 
+namespace UniqueWordsCounter::Utils::TextFiles
+{
 extern const std::string kDataFolder;
 
 extern const std::string kEmpty;
@@ -88,3 +90,5 @@ private:
     std::string _word;
     size_t      _wordCounter{};
 };
+
+}    // namespace UniqueWordsCounter::Utils::TextFiles

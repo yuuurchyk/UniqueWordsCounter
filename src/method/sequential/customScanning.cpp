@@ -28,13 +28,15 @@ concept HashMap = requires(T t)
 template <HashMap T>
 auto customScanningImpl(const std::string &filename) -> size_t
 {
-    auto file = getFile(filename);
+    using namespace UniqueWordsCounter::Utils;
+
+    auto file = TextFiles::getFile(filename);
 
     auto uniqueWords = T{};
     auto lastWord    = std::string{};
 
     static constexpr auto kBufferSize = size_t{ 1ULL << 20 };
-    auto                  buffer      = Buffer{ kBufferSize };
+    auto                  buffer      = Scanning::Buffer{ kBufferSize };
 
     do
     {
@@ -57,13 +59,12 @@ auto customScanningImpl(const std::string &filename) -> size_t
 
 }    // namespace
 
-auto UniqueWordsCounter::Sequential::customScanning(const std::string &filename) -> size_t
+auto UniqueWordsCounter::Method::customScanning(const std::string &filename) -> size_t
 {
     return customScanningImpl<std::unordered_set<std::string>>(filename);
 }
 
-auto UniqueWordsCounter::Sequential::optimizedBaseline(const std::string &filename)
-    -> size_t
+auto UniqueWordsCounter::Method::optimizedBaseline(const std::string &filename) -> size_t
 {
-    return customScanningImpl<OpenAddressingSet>(filename);
+    return customScanningImpl<Utils::OpenAddressingSet>(filename);
 }

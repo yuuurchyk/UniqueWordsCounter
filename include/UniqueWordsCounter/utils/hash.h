@@ -3,7 +3,9 @@
 #include <cstddef>
 #include <cstdint>
 
-[[nodiscard]] uint64_t murmur64Hash(const char *text, size_t len);
+namespace UniqueWordsCounter::Utils::Hash
+{
+[[nodiscard]] uint64_t murmur64(const char *text, size_t len);
 
 /**
  * @brief
@@ -14,7 +16,7 @@
  *
  * @note it is assumed that \p text contains only lowercase english letters
  */
-[[nodiscard]] uint32_t trivialPolynomialHash(const char *text, size_t len);
+[[nodiscard]] uint32_t polynomial32_trivial(const char *text, size_t len);
 
 /**
  * @brief
@@ -25,4 +27,6 @@
  *
  * @note it is assumed that \p text contains only lowercase english letters
  */
-[[nodiscard]] uint32_t optimizedPolynomialHash(const char *text, size_t len);
+[[nodiscard]] uint32_t polynomial32(const char *text, size_t len);
+
+}    // namespace UniqueWordsCounter::Utils::Hash

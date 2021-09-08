@@ -33,6 +33,8 @@ using hash_type = std::invoke_result_t<F, const char *, size_t>;
 template <HashFunction F>
 auto getNumberOfAmbiguousHashValues(F hashFunction) -> std::tuple<size_t, std::string>
 {
+    using namespace UniqueWordsCounter::Utils::TextFiles;
+
     auto uniqueHashes    = std::unordered_map<hash_type<F>, std::string>{};
     auto ambiguousHashes = std::unordered_set<hash_type<F>>{};
 
@@ -64,12 +66,15 @@ auto getNumberOfAmbiguousHashValues(F hashFunction) -> std::tuple<size_t, std::s
 
 TEST(HashCorrectness, Murmur64)
 {
+    using namespace UniqueWordsCounter::Utils::TextFiles;
+    using namespace UniqueWordsCounter::Utils::Hash;
+
     const auto hashFunctor = std::hash<std::string>{};
 
     for (const auto &word : WordsGenerator{ kAllFiles })
     {
         const auto &stdHash    = hashFunctor(word);
-        const auto &murmurHash = murmur64Hash(word.data(), word.size());
+        const auto &murmurHash = murmur64(word.data(), word.size());
 
         ASSERT_EQ(stdHash, murmurHash)
             << "Wrong murmur hash for word " << word
@@ -79,10 +84,13 @@ TEST(HashCorrectness, Murmur64)
 
 TEST(HashCorrectness, OptimizedPolynomialHash)
 {
+    using namespace UniqueWordsCounter::Utils::TextFiles;
+    using namespace UniqueWordsCounter::Utils::Hash;
+
     for (const auto &word : WordsGenerator{ kAllFiles })
     {
-        const auto &trivialValue   = trivialPolynomialHash(word.data(), word.size());
-        const auto &optimizedValue = optimizedPolynomialHash(word.data(), word.size());
+        const auto &trivialValue   = polynomial32_trivial(word.data(), word.size());
+        const auto &optimizedValue = polynomial32(word.data(), word.size());
 
         ASSERT_EQ(trivialValue, optimizedValue)
             << "Word " << word << ": "
@@ -93,16 +101,20 @@ TEST(HashCorrectness, OptimizedPolynomialHash)
 
 TEST(HashUniqueness, NoCollisionsPresent_Murmur64)
 {
+    using namespace UniqueWordsCounter::Utils::Hash;
+
     const auto &[numberOfAmbiguousHashValues, diagnosticMessage] =
-        getNumberOfAmbiguousHashValues(&murmur64Hash);
+        getNumberOfAmbiguousHashValues(&murmur64);
 
     ASSERT_EQ(numberOfAmbiguousHashValues, 0) << diagnosticMessage;
 }
 
 TEST(HashUniqueness, CollisionsPresent_Polynomial32)
 {
+    using namespace UniqueWordsCounter::Utils::Hash;
+
     const auto &[numberOfAmbiguousHashValues, diagnosticMessage] =
-        getNumberOfAmbiguousHashValues(&optimizedPolynomialHash);
+        getNumberOfAmbiguousHashValues(&polynomial32);
 
     if (numberOfAmbiguousHashValues > 0)
         std::cout << diagnosticMessage << std::endl;

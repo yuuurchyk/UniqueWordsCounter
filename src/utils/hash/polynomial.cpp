@@ -26,7 +26,8 @@ inline uint64_t characterCode(char character)
 
 }    // namespace
 
-uint32_t trivialPolynomialHash(const char *text, size_t len)
+uint32_t UniqueWordsCounter::Utils::Hash::polynomial32_trivial(const char *text,
+                                                               size_t      len)
 {
     auto hash = uint64_t{};
 
@@ -39,7 +40,7 @@ uint32_t trivialPolynomialHash(const char *text, size_t len)
     return static_cast<uint32_t>(hash);
 }
 
-uint32_t optimizedPolynomialHash(const char *text, size_t len)
+uint32_t UniqueWordsCounter::Utils::Hash::polynomial32(const char *text, size_t len)
 {
     auto hash = uint64_t{};
 

@@ -96,12 +96,12 @@ skipBuckets:
 
 }    // namespace
 
-OpenAddressingSet::OpenAddressingSet()
+UniqueWordsCounter::Utils::OpenAddressingSet::OpenAddressingSet()
     : _size{}, _capacity{ kDefaultCapacity }, _bucketsOwner{ allocateBuckets(_capacity) }
 {
 }
 
-void OpenAddressingSet::emplace(const char *text, size_t len)
+void UniqueWordsCounter::Utils::OpenAddressingSet::emplace(const char *text, size_t len)
 {
     if (len <= Bucket::kBufferSize) [[likely]]
     {
@@ -115,7 +115,7 @@ void OpenAddressingSet::emplace(const char *text, size_t len)
     }
 }
 
-void OpenAddressingSet::insert(std::string &&s)
+void UniqueWordsCounter::Utils::OpenAddressingSet::insert(std::string &&s)
 {
     if (s.size() <= Bucket::kBufferSize) [[likely]]
         emplace(s.data(), s.size());
@@ -123,9 +123,10 @@ void OpenAddressingSet::insert(std::string &&s)
         _longWords.insert(std::move(s));
 }
 
-void OpenAddressingSet::nativeEmplace(const char *text, size_t len)
+void UniqueWordsCounter::Utils::OpenAddressingSet::nativeEmplace(const char *text,
+                                                                 size_t      len)
 {
-    const auto hash = murmur64Hash(text, len);
+    const auto hash = Utils::Hash::murmur64(text, len);
 
     auto l = reinterpret_cast<Bucket *>(_bucketsOwner.get());
     auto r = l + _capacity;
@@ -142,7 +143,7 @@ void OpenAddressingSet::nativeEmplace(const char *text, size_t len)
     }
 }
 
-void OpenAddressingSet::rehash(size_t newCapacity)
+void UniqueWordsCounter::Utils::OpenAddressingSet::rehash(size_t newCapacity)
 {
     auto newBucketsOwner = allocateBuckets(newCapacity);
 
