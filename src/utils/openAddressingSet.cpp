@@ -242,3 +242,13 @@ void UniqueWordsCounter::Utils::OpenAddressingSet::consumeAndClear(OpenAddressin
     _longWords.merge(std::move(rhs._longWords));
     rhs._longWords.clear();
 }
+
+void UniqueWordsCounter::Utils::OpenAddressingSet::clear()
+{
+    for (auto l = reinterpret_cast<Bucket *>(_bucketsOwner.get()), r = l + _capacity;
+         l != r;
+         ++l)
+        l->setUnoccupied();
+    _size = 0;
+    _longWords.clear();
+}

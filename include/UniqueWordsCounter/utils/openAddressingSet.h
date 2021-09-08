@@ -23,6 +23,7 @@ public:
 
     void emplace(const char *, size_t);
     void insert(std::string &&);
+    void clear();
 
     [[nodiscard]] inline size_t nativeSize() const noexcept { return _size; }
     [[nodiscard]] inline size_t size() const noexcept
