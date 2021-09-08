@@ -19,7 +19,7 @@ namespace UniqueWordsCounter::Method
 /* Sequential */
 auto baseline(const std::string &filename) -> size_t;
 
-auto customScanning(const std::string &filename) -> size_t;
+auto bufferScanning(const std::string &filename) -> size_t;
 auto optimizedBaseline(const std::string &fiename) -> size_t;
 
 /* Parallel */

@@ -49,7 +49,7 @@
 // clang-format on
 
 REGISTER_BENCHMARK_FUNCTION(baseline, UniqueWordsCounter::Method::baseline)
-REGISTER_BENCHMARK_FUNCTION(customScanning, UniqueWordsCounter::Method::customScanning)
+REGISTER_BENCHMARK_FUNCTION(customScanning, UniqueWordsCounter::Method::bufferScanning)
 REGISTER_BENCHMARK_FUNCTION(optimizedBaseline,
                             UniqueWordsCounter::Method::optimizedBaseline)
 REGISTER_BENCHMARK_FUNCTION(producerConsumer,

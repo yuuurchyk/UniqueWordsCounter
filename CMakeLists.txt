@@ -34,7 +34,7 @@ add_library(
     include/UniqueWordsCounter/utils/textFiles.h
     include/UniqueWordsCounter/utils/scanning.h
     src/method/sequential/baseline.cpp
-    src/method/sequential/customScanning.cpp
+    src/method/sequential/bufferScanning.cpp
     src/method/parallel/producerConsumer.cpp
     src/utils/openAddressingSet.cpp
     src/utils/hash/murmur64.cpp

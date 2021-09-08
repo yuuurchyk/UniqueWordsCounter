@@ -26,7 +26,7 @@ concept HashMap = requires(T t)
 };
 
 template <HashMap T>
-auto customScanningImpl(const std::string &filename) -> size_t
+auto bufferScanningImpl(const std::string &filename) -> size_t
 {
     using namespace UniqueWordsCounter::Utils;
 
@@ -59,12 +59,12 @@ auto customScanningImpl(const std::string &filename) -> size_t
 
 }    // namespace
 
-auto UniqueWordsCounter::Method::customScanning(const std::string &filename) -> size_t
+auto UniqueWordsCounter::Method::bufferScanning(const std::string &filename) -> size_t
 {
-    return customScanningImpl<std::unordered_set<std::string>>(filename);
+    return bufferScanningImpl<std::unordered_set<std::string>>(filename);
 }
 
 auto UniqueWordsCounter::Method::optimizedBaseline(const std::string &filename) -> size_t
 {
-    return customScanningImpl<Utils::OpenAddressingSet>(filename);
+    return bufferScanningImpl<Utils::OpenAddressingSet>(filename);
 }

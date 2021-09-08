@@ -17,7 +17,7 @@ auto main(int argc, char **argv) -> int
     // methods representation
     // sequential
     constexpr auto kBaseline       = "baseline";
-    constexpr auto kCustomScanning = "customScanning";
+    constexpr auto kBufferScanning = "customScanning";
 
     // parallel
     constexpr auto kProducerConsumer = "producerConsumer";
@@ -29,12 +29,12 @@ auto main(int argc, char **argv) -> int
     };
 
     const auto methodDescription =
-        [&kBaseline, &kCustomScanning, &kProducerConsumer]() -> std::string
+        [&kBaseline, &kBufferScanning, &kProducerConsumer]() -> std::string
     {
         auto description = std::stringstream{};
 
         description << "Method to use. "
-                    << "Sequential methods: " << kBaseline << ", " << kCustomScanning
+                    << "Sequential methods: " << kBaseline << ", " << kBufferScanning
                     << ". Parallel methods: " << kProducerConsumer;
 
         return description.str();
@@ -76,8 +76,8 @@ auto main(int argc, char **argv) -> int
 
     if (method == kBaseline)
         result = UniqueWordsCounter::Method::baseline(filepath);
-    else if (method == kCustomScanning)
-        result = UniqueWordsCounter::Method::customScanning(filepath);
+    else if (method == kBufferScanning)
+        result = UniqueWordsCounter::Method::bufferScanning(filepath);
     else if (method == kProducerConsumer)
         result = UniqueWordsCounter::Method::producerConsumer(
             filepath, std::max(0U, std::thread::hardware_concurrency()));
