@@ -33,9 +33,9 @@ add_library(
     include/UniqueWordsCounter/utils/hash.h
     include/UniqueWordsCounter/utils/textFiles.h
     include/UniqueWordsCounter/utils/scanning.h
-    src/method/sequential/baseline.cpp
-    src/method/sequential/bufferScanning.cpp
-    src/method/parallel/producerConsumer.cpp
+    src/method/baseline.cpp
+    src/method/bufferScanning.cpp
+    src/method/producerConsumer.cpp
     src/utils/openAddressingSet.cpp
     src/utils/hash/murmur64.cpp
     src/utils/hash/polynomial.cpp
