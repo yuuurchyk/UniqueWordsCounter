@@ -4,6 +4,8 @@
 #include <cstring>
 #include <limits>
 #include <new>
+#include <sstream>
+#include <stdexcept>
 #include <utility>
 
 #include "UniqueWordsCounter/utils/hash.h"
@@ -96,9 +98,27 @@ skipBuckets:
 
 }    // namespace
 
-UniqueWordsCounter::Utils::OpenAddressingSet::OpenAddressingSet()
-    : _size{}, _capacity{ kDefaultCapacity }, _bucketsOwner{ allocateBuckets(_capacity) }
+UniqueWordsCounter::Utils::OpenAddressingSet::OpenAddressingSet(size_t capacity)
+    : _size{}, _capacity{ capacity }
 {
+    if (capacity < kDefaultCapacity)
+    {
+        auto errorMessage = std::stringstream{};
+        errorMessage << "Capacity " << capacity
+                     << " cannot be smaller than default capacity (" << kDefaultCapacity
+                     << ")";
+
+        throw std::runtime_error{ errorMessage.str() };
+    }
+    if ((capacity & (capacity - 1)) != 0)
+    {
+        auto errorMessage = std::stringstream{};
+        errorMessage << "Capacity " << capacity << " should be a power of 2";
+
+        throw std::runtime_error{ errorMessage.str() };
+    }
+
+    _bucketsOwner = allocateBuckets(_capacity);
 }
 
 void UniqueWordsCounter::Utils::OpenAddressingSet::emplace(const char *text, size_t len)
@@ -106,8 +126,8 @@ void UniqueWordsCounter::Utils::OpenAddressingSet::emplace(const char *text, siz
     if (len <= Bucket::kBufferSize) [[likely]]
     {
         nativeEmplace(text, len);
-        if (nativeSize() + nativeSize() / 8 > _capacity)
-            rehash(_capacity * 2);
+        if (elementsUntilRehash() == 0)
+            rehash();
     }
     else
     {
@@ -128,9 +148,9 @@ void UniqueWordsCounter::Utils::OpenAddressingSet::nativeEmplace(const char *tex
 {
     const auto hash = Utils::Hash::murmur64(text, len);
 
-    auto l = reinterpret_cast<Bucket *>(_bucketsOwner.get());
-    auto r = l + _capacity;
-    auto m = l + getBucketIndex(hash, _capacity);
+    const auto l = reinterpret_cast<Bucket *>(_bucketsOwner.get());
+    const auto r = l + _capacity;
+    const auto m = l + getBucketIndex(hash, _capacity);
 
     auto bucket = findFreeBucket(m, r, hash, text, len);
     if (bucket == r)
@@ -143,22 +163,23 @@ void UniqueWordsCounter::Utils::OpenAddressingSet::nativeEmplace(const char *tex
     }
 }
 
-void UniqueWordsCounter::Utils::OpenAddressingSet::rehash(size_t newCapacity)
+void UniqueWordsCounter::Utils::OpenAddressingSet::rehash()
 {
-    auto newBucketsOwner = allocateBuckets(newCapacity);
+    const auto l = reinterpret_cast<const Bucket *>(_bucketsOwner.get());
+    const auto r = l + _capacity;
 
-    auto newL = reinterpret_cast<Bucket *>(newBucketsOwner.get());
-    auto newR = newL + newCapacity;
+    const auto newCapacity     = _capacity * 2;
+    auto       newBucketsOwner = allocateBuckets(newCapacity);
 
-    for (auto oldBucket = reinterpret_cast<Bucket *>(_bucketsOwner.get()),
-              r         = oldBucket + _capacity;
-         oldBucket != r;
-         ++oldBucket)
+    const auto newL = reinterpret_cast<Bucket *>(newBucketsOwner.get());
+    const auto newR = newL + newCapacity;
+
+    for (auto oldBucket = l; oldBucket != r; ++oldBucket)
     {
         if (!oldBucket->isOccupied())
             continue;
 
-        auto newM = newL + getBucketIndex(oldBucket->getHash(), newCapacity);
+        const auto newM = newL + getBucketIndex(oldBucket->getHash(), newCapacity);
 
         auto newBucket = findFreeBucket(
             newM, newR, oldBucket->getHash(), oldBucket->getText(), oldBucket->size());
@@ -174,4 +195,50 @@ void UniqueWordsCounter::Utils::OpenAddressingSet::rehash(size_t newCapacity)
 
     _capacity     = newCapacity;
     _bucketsOwner = std::move(newBucketsOwner);
+}
+
+void UniqueWordsCounter::Utils::OpenAddressingSet::consumeAndClear(OpenAddressingSet &rhs)
+{
+    const auto rhsL = reinterpret_cast<Bucket *>(rhs._bucketsOwner.get());
+    const auto rhsR = rhsL + rhs._capacity;
+
+    Bucket *l{}, *r{};
+    auto    initBounds = [&l, &r, this]()
+    {
+        l = reinterpret_cast<Bucket *>(_bucketsOwner.get());
+        r = l + _capacity;
+    };
+    initBounds();
+
+    for (auto rhsBucket = rhsL; rhsBucket != rhsR; ++rhsBucket)
+    {
+        if (!rhsBucket->isOccupied())
+            continue;
+
+        const auto m = l + getBucketIndex(rhsBucket->getHash(), _capacity);
+
+        auto destinationBucket = findFreeBucket(
+            m, r, rhsBucket->getHash(), rhsBucket->getText(), rhsBucket->size());
+        if (destinationBucket == r)
+            destinationBucket = findFreeBucket(
+                l, m, rhsBucket->getHash(), rhsBucket->getText(), rhsBucket->size());
+
+        if (destinationBucket != nullptr)
+        {
+            destinationBucket->steal(*rhsBucket);
+            ++_size;
+            if (elementsUntilRehash() == 0)
+            {
+                rehash();
+                initBounds();
+            }
+        }
+
+        rhsBucket->setUnoccupied();
+    }
+
+    rhs._size = 0ULL;
+
+    _longWords.merge(std::move(rhs._longWords));
+    rhs._longWords.clear();
 }

@@ -10,7 +10,8 @@ namespace UniqueWordsCounter::Utils
 class OpenAddressingSet
 {
 public:
-    OpenAddressingSet();
+    OpenAddressingSet() : OpenAddressingSet(kDefaultCapacity) {}
+    explicit OpenAddressingSet(size_t capacity);
 
     OpenAddressingSet(const OpenAddressingSet &) = delete;
     OpenAddressingSet &operator=(const OpenAddressingSet &) = delete;
@@ -29,6 +30,11 @@ public:
         return nativeSize() + _longWords.size();
     }
 
+    [[nodiscard]] inline size_t elementsUntilRehash() const noexcept
+    {
+        return (_capacity * 9) / 10 - nativeSize();
+    }
+
     /**
      * @brief merges contents of \p rhs into *this.
      *
@@ -36,12 +42,11 @@ public:
      *
      * @note \p rhs is cleared and can be used after the operation
      */
-    // TODO: implement this method
-    // void consumeAndClear(OpenAddressingSet &rhs);
+    void consumeAndClear(OpenAddressingSet &rhs);
 
 private:
     void nativeEmplace(const char *, size_t);
-    void rehash(size_t newCapacity);
+    void rehash();
 
     size_t _size;
     size_t _capacity;
