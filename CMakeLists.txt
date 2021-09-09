@@ -16,14 +16,8 @@ if(AddGprofFlags)
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -pg")
 endif()
 
-option(UseSystemBoost "Look for globally installed Boost (ON) or build in-place (OFF)" ON)
-if(UseSystemBoost)
-    find_package(Boost REQUIRED COMPONENTS program_options iostreams)
-else()
-    include(boost)
-endif()
-
 include(tbb)
+include(argparse)
 
 add_library(
     lib_${PROJECT_NAME}
@@ -47,10 +41,10 @@ target_link_libraries(lib_${PROJECT_NAME} PRIVATE ${CMAKE_THREAD_LIBS_INIT} TBB:
 target_compile_definitions(lib_${PROJECT_NAME} PRIVATE DATA_FOLDER="${CMAKE_CURRENT_SOURCE_DIR}/data")
 
 add_executable(${PROJECT_NAME} examples/uniqueWordsCounter.cpp)
-target_link_libraries(${PROJECT_NAME} PRIVATE lib_${PROJECT_NAME} Boost::program_options)
+target_link_libraries(${PROJECT_NAME} PRIVATE lib_${PROJECT_NAME} argparse::argparse)
 
 add_executable(generateFile tools/generateFile.cpp)
-target_link_libraries(generateFile PRIVATE Boost::program_options)
+target_link_libraries(generateFile PRIVATE argparse::argparse)
 
 set(
     Targets

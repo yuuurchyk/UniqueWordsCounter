@@ -10,54 +10,60 @@ This repository contains the collection of methods I experimented with when solv
 
 **Note:** many methods are not optimal in terms of either CPU utilization or performance. They are present for benchmarking purposes only. See the benchmark results below to identify the good ones.
 
-**Note:** because of the task artificiality, the input files should be constrained to only lowercase english letters and space characters. However, it is not hard to extend the methods to handle arbitrary characters.
-
 ## Building
 
-The following libraries are required to build the examples:
+### Compiler
 
-1. *Boost*
-2. *TBB*
-3. *google benchmark*
-4. *google test*
+The project uses **C++20**, so the latest compiler is required. The following toolchains were tested:
 
-The following options in cmake control whether to build each library together with the examples or link to a system-installed one:
+| Compiler | OS |
+| - | - |
+| **GCC** >= 10.3.0 | *Ubuntu 20.04* |
+| **Clang** >= 12.0.0 | *Ubuntu 20.04* |
+| // TODO: add info on MSVC | Windows10 |
+
+### Additional Libraries
+
+The following libraries are used in the project:
+
+* [*argparse*](https://github.com/p-ranav/argparse)
+* [*TBB*](https://github.com/oneapi-src/oneTBB)
+* [*google benchmark*](https://github.com/google/benchmark)
+* [*google test*](https://github.com/google/googletest)
+
+Assembling all of them does not require lots of cmake configure/build time, so they are fetched and built from source automatically.
+
+### Cmake Options
+
+The following options are available:
 
 | Option Name | Default Value | Description |
 |-----|--------|------|
-| *UseSystemBoost* | **ON** | Look for globally installed Boost (ON) or build in-place (OFF) |
-| *WithBenchmarks* | **ON** | Whether to build benchmark targets |
-| *WithTests* | **ON** | Example of programs related to data structures and algorithms used in the final solution |
+| **WithBenchmarks** | *ON* | include *google benchmark* library and benchmark targets |
+| **WithTests** | *ON* | include *google test* library and test targets |
+| **AddGprofFlags** | *OFF* | Add gprof compilation flags to all the executables (useful when profiling) |
 
-Assembling *TBB*, *benchmark* and *google test* does not require lots of cmake configure/build time, so they are built from source together with the project.
+### Known Issues
 
-As for *boost*, it is preferred to link against an installed libraries/headers if you have them.
-
-Here is how to configure the project to download all the dependencies for you:
-
-```bash
->>> mkdir build
->>> cd build
->>> cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_BUILD_TYPE=Debug -DUseSystemBoost=OFF ..
-```
-
-### Issues
-
-At the moment of writing, it is not possible to build *TBB* if you have spaces in the project path. I have already submitted an issue on github. Hope it would be overcome soon.
+At the moment of writing, it is not possible to build *TBB* if you have spaces in the project path. I have already submitted an issue on [github](https://github.com/oneapi-src/oneTBB/issues/531). Hope it would be overcome soon.
 
 ## Before You Start
 
-There is a utility target for generating artificial text files for you. To replicate the benchmarks, you should have the files to run them on:
+There is a utility target for generating artificial text files used in tests and benchmarks. You should have the files available on your machine for the benchmarks/tests to run fine:
 
 ```bash
->>> ./build/generateFile --path ./data/syntheticShortWords10MB.txt --bytes 10485760 --words-size-mean 5 --words-size-stddev 2 --seed 10
->>> ./build/generateFile --path ./data/syntheticLongWords10MB.txt --bytes 10485760 --words-size-mean 15 --words-size-stddev 5 --seed 10
+mkdir build && cd build
+cmake -DCMAKE_BUILD_TYPE=Release ..
+cmake --build . --target generateFile
 
->>> ./build/generateFile --path ./data/syntheticShortWords100MB.txt --bytes 104857600 --words-size-mean 5 --words-size-stddev 2 --seed 100
->>> ./build/generateFile --path ./data/syntheticLongWords100MB.txt --bytes 104857600 --words-size-mean 15 --words-size-stddev 5 --seed 100
+./generateFile --path ./data/syntheticShortWords10MB.txt --bytes 10485760 --words-size-mean 5 --words-size-stddev 2 --seed 10
+./generateFile --path ./data/syntheticLongWords10MB.txt --bytes 10485760 --words-size-mean 15 --words-size-stddev 5 --seed 10
 
->>> ./build/generateFile --path ./data/syntheticShortWords1000MB.txt --bytes 1048576000 --words-size-mean 5 --words-size-stddev 2 --seed 1000
->>> ./build/generateFile --path ./data/syntheticLongWords1000MB.txt --bytes 1048576000 --words-size-mean 15 --words-size-stddev 5 --seed 1000
+./generateFile --path ./data/syntheticShortWords100MB.txt --bytes 104857600 --words-size-mean 5 --words-size-stddev 2 --seed 100
+./generateFile --path ./data/syntheticLongWords100MB.txt --bytes 104857600 --words-size-mean 15 --words-size-stddev 5 --seed 100
+
+./generateFile --path ./data/syntheticShortWords1000MB.txt --bytes 1048576000 --words-size-mean 5 --words-size-stddev 2 --seed 1000
+./generateFile --path ./data/syntheticLongWords1000MB.txt --bytes 1048576000 --words-size-mean 15 --words-size-stddev 5 --seed 1000
 ```
 
 TODO: add benchmark results

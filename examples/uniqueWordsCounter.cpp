@@ -1,89 +1,117 @@
 #include <algorithm>
 #include <cstdlib>
+#include <filesystem>
+#include <functional>
 #include <iostream>
 #include <sstream>
 #include <stdexcept>
 #include <string>
 #include <thread>
+#include <unordered_map>
 
-#include <boost/program_options.hpp>
+#include <argparse/argparse.hpp>
 
 #include "UniqueWordsCounter/methods.h"
 
-auto main(int argc, char **argv) -> int
+using namespace std::string_literals;
+
+namespace
 {
-    namespace po = boost::program_options;
+const auto kBaseline          = "baseline"s;
+const auto kBufferScanning    = "bufferScanning"s;
+const auto kOptimizedBaseline = "optimizedBaseline"s;
 
-    // methods representation
-    // sequential
-    constexpr auto kBaseline       = "baseline";
-    constexpr auto kBufferScanning = "customScanning";
+const auto kProducerConsumer = "producerConsumer"s;
 
-    // parallel
-    constexpr auto kProducerConsumer = "producerConsumer";
+const auto kMethods = { kBaseline,
+                        kBufferScanning,
+                        kOptimizedBaseline,
+                        kProducerConsumer };
 
-    auto description = po::options_description{
-        "Calculates number of unique words in the provided file.\n"
-        "Note that the file should contain only lowercase english letters and space characters.\n"
-        "Some methods might not work correctly otherwise."
-    };
+auto join(const std::initializer_list<std::string> &args) -> std::string
+{
+    static const auto separator = ", "s;
 
-    const auto methodDescription =
-        [&kBaseline, &kBufferScanning, &kProducerConsumer]() -> std::string
+    auto result = std::stringstream{};
+
+    for (auto it = args.begin(); it != args.end(); ++it)
     {
-        auto description = std::stringstream{};
-
-        description << "Method to use. "
-                    << "Sequential methods: " << kBaseline << ", " << kBufferScanning
-                    << ". Parallel methods: " << kProducerConsumer;
-
-        return description.str();
-    }();
-
-    // clang-format off
-    description.add_options()
-        (
-            "help,h",
-            "Shows help message"
-        )
-        (
-            "filepath,f",
-            po::value<std::string>()->required(),
-            "Path to the text file to read"
-        )
-        (
-            "method,m",
-            po::value<std::string>()->required(),
-            methodDescription.c_str()
-        );
-    // clang-format on
-
-    auto variables = po::variables_map{};
-    po::store(po::parse_command_line(argc, argv, description), variables);
-
-    if (variables.count("help"))
-    {
-        std::cout << description << std::endl;
-        return EXIT_SUCCESS;
+        result << *it;
+        if (std::next(it) != args.end())
+            result << separator;
     }
 
-    po::notify(variables);
+    return result.str();
+};
 
-    const auto filepath = variables["filepath"].as<std::string>();
-    const auto method   = variables["method"].as<std::string>();
+}    // namespace
 
-    auto result = size_t{};
+auto main(int argc, char **argv) -> int
+{
+    auto program = argparse::ArgumentParser{ "uniqueWordsCounter" };
+    program.add_description("Calculates number of unique words in the provided file");
 
-    if (method == kBaseline)
-        result = UniqueWordsCounter::Method::baseline(filepath);
-    else if (method == kBufferScanning)
-        result = UniqueWordsCounter::Method::bufferScanning(filepath);
-    else if (method == kProducerConsumer)
-        result = UniqueWordsCounter::Method::producerConsumer(
-            filepath, std::max(0U, std::thread::hardware_concurrency()));
-    else
-        throw std::runtime_error{ "Invalid method: " + method };
+    program.add_argument("-f", "--filepath")
+        .required()
+        .action(
+            [](const std::string &filepath)
+            {
+                if (!std::filesystem::is_regular_file(filepath))
+                    throw std::runtime_error{ filepath +
+                                              " does not point to a regular file"s };
+                return filepath;
+            })
+        .help("Path to the text file to read");
+    program.add_argument("-m", "--method")
+        .required()
+        .action(
+            [](const std::string &method)
+            {
+                if (std::find(kMethods.begin(), kMethods.end(), method) == kMethods.end())
+                    throw std::runtime_error{ "Invalid method: "s + method +
+                                              ". Allowed values: "s + join(kMethods) };
+                return method;
+            })
+        .help("Method to use. Allowed values: "s + join(kMethods));
 
+    try
+    {
+        program.parse_args(argc, argv);
+    }
+    catch (const std::exception &e)
+    {
+        std::cerr << "Failed to parse command line arguments:\n";
+        std::cerr << e.what() << std::endl;
+        return EXIT_FAILURE;
+    }
+
+    const auto &filepath = program.get("--filepath");
+    const auto &method   = program.get("--method");
+
+    const auto kExecutionMap = []()
+        -> std::unordered_map<std::string, std::function<size_t(const std::string &)>>
+    {
+        using namespace UniqueWordsCounter::Method;
+
+        auto result =
+            std::unordered_map<std::string, std::function<size_t(const std::string &)>>{};
+
+        result[kBaseline]          = baseline;
+        result[kBufferScanning]    = bufferScanning;
+        result[kOptimizedBaseline] = optimizedBaseline;
+
+        result[kProducerConsumer] = [](const std::string &filepath) {
+            return producerConsumer(filepath,
+                                    std::max(1U, std::thread::hardware_concurrency()));
+        };
+
+        return result;
+    }();
+
+    if (!kExecutionMap.contains(method))
+        throw std::logic_error{ "Method "s + method + " not recognized."s };
+
+    const auto result = kExecutionMap.at(method)(filepath);
     std::cout << "Found " << result << " unique words" << std::endl;
 
     return EXIT_SUCCESS;
