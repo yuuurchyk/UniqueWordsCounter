@@ -1,6 +1,5 @@
 FetchContent_Declare(
     argparse
-    GIT_REPOSITORY https://github.com/p-ranav/argparse.git
-    GIT_TAG        v2.1
+    URL https://github.com/p-ranav/argparse/archive/refs/tags/v2.1.zip
 )
 FetchContent_MakeAvailable(argparse)
