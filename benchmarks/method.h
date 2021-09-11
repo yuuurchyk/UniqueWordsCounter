@@ -10,9 +10,9 @@
     _STRINGIFY(Method_##_##Words_##Words##Size_##MB)
 
 #define _BENCHMARK_NAME1(Method_, Words_, Size_, Arg1Name_, Arg1Value_) \
-    Method_##_##Arg1Value_##Arg1##_##Words_##Words##Size_##MB
+    Method_##_##Arg1Value_##Arg1Name_##_##Words_##Words##Size_##MB
 #define _BENCHMARK_NAME1_S(Method_, Words_, Size_, Arg1Name_, Arg1Value_) \
-    _STRINGIFY(Method_##_##Arg1Value_##Arg1##_##Words_##Words##Size_##MB)
+    _STRINGIFY(Method_##_##Arg1Value_##Arg1Name_##_##Words_##Words##Size_##MB)
 
 #define REGISTER_BENCHMARK(Method_, Words_, Size_, Iterations_)                     \
     BENCHMARK_CAPTURE(                                                              \
@@ -54,3 +54,5 @@ REGISTER_BENCHMARK_FUNCTION(optimizedBaseline,
                             UniqueWordsCounter::Method::optimizedBaseline)
 REGISTER_BENCHMARK_FUNCTION(producerConsumer,
                             UniqueWordsCounter::Method::producerConsumer)
+REGISTER_BENCHMARK_FUNCTION(optimizedProducerConsumer,
+                            UniqueWordsCounter::Method::optimizedProducerConsumer)
