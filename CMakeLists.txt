@@ -31,6 +31,7 @@ add_library(
     src/method/bufferScanning.cpp
     src/method/producerConsumer.cpp
     src/method/optimizedProducerConsumer.cpp
+    src/method/concurrentSetProducerConsumer.cpp
     src/utils/openAddressingSet.cpp
     src/utils/hash/murmur64.cpp
     src/utils/hash/polynomial.cpp

@@ -26,5 +26,7 @@ auto optimizedBaseline(const std::string &fiename) -> size_t;
 auto producerConsumer(const std::string &filename, size_t consumersNum) -> size_t;
 auto optimizedProducerConsumer(const std::string &filename, size_t producersNum)
     -> size_t;
+auto concurrentSetProducerConsumer(const std::string &filename, size_t producersNum)
+    -> size_t;
 
 }    // namespace UniqueWordsCounter::Method

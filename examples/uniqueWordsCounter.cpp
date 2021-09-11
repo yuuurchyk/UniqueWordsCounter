@@ -21,14 +21,16 @@ const auto kBaseline          = "baseline"s;
 const auto kBufferScanning    = "bufferScanning"s;
 const auto kOptimizedBaseline = "optimizedBaseline"s;
 
-const auto kProducerConsumer          = "producerConsumer"s;
-const auto kOptimizedProducerConsumer = "optimizedProducerConsumer"s;
+const auto kProducerConsumer              = "producerConsumer"s;
+const auto kOptimizedProducerConsumer     = "optimizedProducerConsumer"s;
+const auto kConcurrentSetProducerConsumer = "concurrentSetProducerConsumer"s;
 
 const auto kMethods = { kBaseline,
                         kBufferScanning,
                         kOptimizedBaseline,
                         kProducerConsumer,
-                        kOptimizedProducerConsumer };
+                        kOptimizedProducerConsumer,
+                        kConcurrentSetProducerConsumer };
 
 auto join(const std::initializer_list<std::string> &args) -> std::string
 {
@@ -110,6 +112,10 @@ auto main(int argc, char **argv) -> int
         { return producerConsumer(filepath, std::max(1U, threadsNum - 1U)); };
         result[kOptimizedProducerConsumer] = [&threadsNum](const std::string &filepath)
         { return optimizedProducerConsumer(filepath, std::max(1U, threadsNum - 1U)); };
+        result[kConcurrentSetProducerConsumer] = [&threadsNum](
+                                                     const std::string &filepath) {
+            return concurrentSetProducerConsumer(filepath, std::max(1U, threadsNum - 1U));
+        };
 
         return result;
     }();
