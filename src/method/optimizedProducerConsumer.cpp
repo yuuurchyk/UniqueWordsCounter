@@ -12,74 +12,19 @@
 
 #include "UniqueWordsCounter/utils/openAddressingSet.h"
 #include "UniqueWordsCounter/utils/scanning.h"
-#include "UniqueWordsCounter/utils/textFiles.h"
 
 namespace
 {
-constexpr auto kBufferSize          = size_t{ 1 << 20 };
 constexpr auto kProducerSetCapacity = size_t{ 1 << 10 };
-
-struct Task
-{
-    UniqueWordsCounter::Utils::Scanning::Buffer buffer{ kBufferSize };
-    std::future<std::string>                    lastWordFromPreviousTask{};
-    std::promise<std::string>                   lastWordFromCurrentTask{};
-};
 
 }    // namespace
 
 auto UniqueWordsCounter::Method::optimizedProducerConsumer(const std::string &filename,
                                                            size_t producersNum) -> size_t
 {
-    auto tasksOwner     = std::vector<std::unique_ptr<Task>>{};
-    auto pendingTasks   = tbb::concurrent_bounded_queue<Task *>{};
-    auto availableTasks = tbb::concurrent_bounded_queue<Task *>{};
-
-    auto reader = [&tasksOwner, &availableTasks, &pendingTasks, &filename]()
-    {
-        auto file = Utils::TextFiles::getFile(filename);
-
-        auto firstTask = [&tasksOwner, &file]()
-        {
-            auto lastWordBeforeFirstTask = std::promise<std::string>{};
-            lastWordBeforeFirstTask.set_value({});
-
-            tasksOwner.emplace_back(new Task{});
-            auto firstTask = tasksOwner.back().get();
-
-            firstTask->buffer.read(file);
-            firstTask->lastWordFromPreviousTask = lastWordBeforeFirstTask.get_future();
-
-            return firstTask;
-        }();
-
-        auto previousTask = firstTask;
-        while (previousTask->buffer.size() > 0)
-        {
-            Task *currentTask{};
-            if (availableTasks.try_pop(currentTask))
-            {
-                currentTask->lastWordFromPreviousTask = {};
-                currentTask->lastWordFromCurrentTask  = {};
-            }
-            else
-            {
-                tasksOwner.emplace_back(new Task{});
-                currentTask = tasksOwner.back().get();
-            }
-
-            currentTask->buffer.read(file);
-            currentTask->lastWordFromPreviousTask =
-                previousTask->lastWordFromCurrentTask.get_future();
-
-            pendingTasks.push(previousTask);
-            previousTask = currentTask;
-        }
-        pendingTasks.push(previousTask);
-        pendingTasks.push(nullptr);
-    };
-
     using Utils::OpenAddressingSet;
+
+    auto taskManager = Utils::Scanning::TaskManager{};
 
     auto producerSetsOwner      = std::vector<std::unique_ptr<OpenAddressingSet>>{};
     auto producerSetsOwnerMutex = std::mutex{};
@@ -103,19 +48,16 @@ auto UniqueWordsCounter::Method::optimizedProducerConsumer(const std::string &fi
         return result;
     };
 
-    auto producer =
-        [&pendingProducerSets, &pendingTasks, &availableTasks, &allocateProducerSet]()
+    auto producer = [&pendingProducerSets, &allocateProducerSet, &taskManager]()
     {
         auto producerSet = allocateProducerSet();
 
         while (true)
         {
-            Task *currentTask{};
-            while (!pendingTasks.pop(currentTask)) {}
+            auto currentTask = taskManager.retrievePendingTask();
 
-            if (currentTask == nullptr)
+            if (currentTask.isDeathPill())
             {
-                pendingTasks.push(nullptr);
                 pendingProducerSets.push(producerSet);
                 return;
             }
@@ -138,8 +80,6 @@ auto UniqueWordsCounter::Method::optimizedProducerConsumer(const std::string &fi
                                             currentTask->lastWordFromPreviousTask.get(),
                                             wordCallback,
                                             lastWordCallback);
-
-            availableTasks.push(currentTask);
         }
     };
 
@@ -166,7 +106,7 @@ auto UniqueWordsCounter::Method::optimizedProducerConsumer(const std::string &fi
 
     auto consumerThread = std::thread{ consumer };
 
-    reader();
+    Utils::Scanning::reader(filename, taskManager);
     for (auto &&producerThread : producerThreads)
         producerThread.join();
     pendingProducerSets.push(nullptr);
