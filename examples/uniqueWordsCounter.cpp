@@ -21,12 +21,14 @@ const auto kBaseline          = "baseline"s;
 const auto kBufferScanning    = "bufferScanning"s;
 const auto kOptimizedBaseline = "optimizedBaseline"s;
 
-const auto kProducerConsumer = "producerConsumer"s;
+const auto kProducerConsumer          = "producerConsumer"s;
+const auto kOptimizedProducerConsumer = "optimizedProducerConsumer"s;
 
 const auto kMethods = { kBaseline,
                         kBufferScanning,
                         kOptimizedBaseline,
-                        kProducerConsumer };
+                        kProducerConsumer,
+                        kOptimizedProducerConsumer };
 
 auto join(const std::initializer_list<std::string> &args) -> std::string
 {
@@ -100,10 +102,14 @@ auto main(int argc, char **argv) -> int
         result[kBufferScanning]    = bufferScanning;
         result[kOptimizedBaseline] = optimizedBaseline;
 
-        result[kProducerConsumer] = [](const std::string &filepath) {
-            return producerConsumer(filepath,
-                                    std::max(1U, std::thread::hardware_concurrency()));
-        };
+        const auto threadsNum = std::thread::hardware_concurrency() == 0U ?
+                                    1U :
+                                    std::thread::hardware_concurrency();
+
+        result[kProducerConsumer] = [&threadsNum](const std::string &filepath)
+        { return producerConsumer(filepath, std::max(1U, threadsNum - 1U)); };
+        result[kOptimizedProducerConsumer] = [&threadsNum](const std::string &filepath)
+        { return optimizedProducerConsumer(filepath, std::max(1U, threadsNum - 1U)); };
 
         return result;
     }();

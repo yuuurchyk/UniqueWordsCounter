@@ -30,6 +30,7 @@ add_library(
     src/method/baseline.cpp
     src/method/bufferScanning.cpp
     src/method/producerConsumer.cpp
+    src/method/optimizedProducerConsumer.cpp
     src/utils/openAddressingSet.cpp
     src/utils/hash/murmur64.cpp
     src/utils/hash/polynomial.cpp
