@@ -1,3 +1,6 @@
+// TODO: add logging of time measurements
+// TODO: add parallelism level option
+
 #include <algorithm>
 #include <cstdlib>
 #include <filesystem>
@@ -17,6 +20,7 @@ using namespace std::string_literals;
 
 namespace
 {
+// TODO: move strings in methods.h header
 const auto kBaseline          = "baseline"s;
 const auto kBufferScanning    = "bufferScanning"s;
 const auto kOptimizedBaseline = "optimizedBaseline"s;
@@ -92,6 +96,7 @@ auto main(int argc, char **argv) -> int
     const auto &filepath = program.get("--filepath");
     const auto &method   = program.get("--method");
 
+    // TODO: refactor
     const auto kExecutionMap = []()
         -> std::unordered_map<std::string, std::function<size_t(const std::string &)>>
     {

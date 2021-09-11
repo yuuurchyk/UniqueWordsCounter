@@ -14,6 +14,7 @@
  * For more details, read the documentation on the concrete method.
  */
 // TODO: add info on the best method
+// TODO: come up with better names for the methods
 namespace UniqueWordsCounter::Method
 {
 /* Sequential */

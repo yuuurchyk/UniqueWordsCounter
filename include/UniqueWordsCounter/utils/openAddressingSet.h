@@ -61,6 +61,8 @@ private:
 
     static_assert((kGrowthFactor & (kGrowthFactor - 1)) == 0,
                   "Growth factor should be a power of 2");
+
+    // TODO: remove this check since it's enforced in the constructor
     static_assert((kDefaultCapacity & (kDefaultCapacity - 1)) == 0,
                   "Default capacity should be a power of 2");
 };

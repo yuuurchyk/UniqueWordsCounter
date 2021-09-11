@@ -13,6 +13,7 @@
 
 namespace UniqueWordsCounter::Utils::Scanning
 {
+// TODO: add template argument for capacity?
 class Buffer
 {
 public:
@@ -53,6 +54,7 @@ struct Task
     std::promise<std::string> lastWordFromCurrentTask{};
 };
 
+// TODO: refactor to hold arbitrary type
 class TaskManager
 {
 public:

@@ -56,3 +56,4 @@ REGISTER_BENCHMARK_FUNCTION(producerConsumer,
                             UniqueWordsCounter::Method::producerConsumer)
 REGISTER_BENCHMARK_FUNCTION(optimizedProducerConsumer,
                             UniqueWordsCounter::Method::optimizedProducerConsumer)
+// TODO: add other methods

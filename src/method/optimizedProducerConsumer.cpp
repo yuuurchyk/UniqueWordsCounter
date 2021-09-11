@@ -26,6 +26,7 @@ auto UniqueWordsCounter::Method::optimizedProducerConsumer(const std::string &fi
 
     auto taskManager = Utils::Scanning::TaskManager{};
 
+    // TODO: refactor to use templated TaskManager
     auto producerSetsOwner      = std::vector<std::unique_ptr<OpenAddressingSet>>{};
     auto producerSetsOwnerMutex = std::mutex{};
 
@@ -48,6 +49,7 @@ auto UniqueWordsCounter::Method::optimizedProducerConsumer(const std::string &fi
         return result;
     };
 
+    // TODO: refactor to anonymous function
     auto producer = [&pendingProducerSets, &allocateProducerSet, &taskManager]()
     {
         auto producerSet = allocateProducerSet();

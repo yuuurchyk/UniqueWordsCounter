@@ -21,6 +21,7 @@
 
 namespace
 {
+// TODO: consider specifying template requirements in template function
 template <typename F>
 concept HashFunction = requires(F)
 {

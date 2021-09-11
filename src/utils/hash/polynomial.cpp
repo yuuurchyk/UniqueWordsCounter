@@ -21,6 +21,7 @@ constexpr std::array<uint64_t, 7> kPPows{ 1ULL % kMod,
 
 inline uint64_t characterCode(char character)
 {
+    // TODO: throw error if letter is not lowercase
     return static_cast<uint64_t>(character - 'a' + 1);
 }
 

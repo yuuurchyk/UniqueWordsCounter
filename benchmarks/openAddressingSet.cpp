@@ -96,6 +96,7 @@ BENCHMARK_REGISTER_F(WordsFixture, BM_open_address_set)
     ->Range(1 << 12, 1 << 27)
     ->Unit(benchmark::kMillisecond);
 
+// TODO: can it be replaced with BENCHMARK_MAIN() ?
 int main(int argc, char **argv)
 {
     // expansion of BENCHMARK_MAIN() macro

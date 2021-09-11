@@ -74,6 +74,7 @@ auto UniqueWordsCounter::Method::producerConsumer(const std::string &filename,
     auto uniqueWordsQueue =
         ThreadSafeContainer<std::deque<std::optional<UniqueWords_t>>>{};
 
+    // TODO: refactor lambdas to anonymous functions
     // reads the words by chunks
     auto reader = [&chunksQueue, &file, &kMaxWordsPerChunk]()
     {

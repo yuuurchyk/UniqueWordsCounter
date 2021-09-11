@@ -59,7 +59,7 @@ INSTANTIATE_TEST_SUITE_P(
             std::make_tuple("optimizedBaseline"s,
                             std::function<size_t(std::string)>{
                                 UniqueWordsCounter::Method::optimizedBaseline })
-            // TODO: add producer-consumer
+            // TODO: add other methods
         })),
     [](const ::testing::TestParamInfo<MethodsCorrectnessFixture::ParamType> &info)
     {

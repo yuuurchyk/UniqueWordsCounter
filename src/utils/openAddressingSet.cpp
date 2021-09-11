@@ -15,6 +15,7 @@ namespace
 class Bucket
 {
 public:
+    // TODO: consider removing
     Bucket() = default;
 
     static constexpr uint8_t kBufferSize{ static_cast<uint8_t>(22) };
@@ -101,6 +102,7 @@ skipBuckets:
 UniqueWordsCounter::Utils::OpenAddressingSet::OpenAddressingSet(size_t capacity)
     : _size{}, _capacity{ capacity }
 {
+    // TODO: consider refactoring errors to string literals and to_string
     if (capacity < kDefaultCapacity)
     {
         auto errorMessage = std::stringstream{};

@@ -7,6 +7,7 @@ namespace UniqueWordsCounter::Utils::Hash
 {
 [[nodiscard]] uint64_t murmur64(const char *text, size_t len);
 
+// TODO: add asciiLowercase to function name?
 /**
  * @brief
  *
