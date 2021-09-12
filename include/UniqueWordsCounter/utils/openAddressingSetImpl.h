@@ -69,9 +69,18 @@ auto UniqueWordsCounter::Utils::OpenAddressingSet<BucketAllocator>::emplace(
     const char *text,
     size_t      len) -> void
 {
+    return emplaceWithHint(Utils::Hash::murmur64(text, len), text, len);
+}
+
+template <typename BucketAllocator>
+auto UniqueWordsCounter::Utils::OpenAddressingSet<BucketAllocator>::emplaceWithHint(
+    uint64_t    hash,
+    const char *text,
+    size_t      len) -> void
+{
     if (len <= OpenAddressingSetBucket::kBufferSize) [[likely]]
     {
-        nativeEmplace(text, len);
+        nativeEmplace(hash, text, len);
         if (elementsUntilRehash() == 0)
             rehash();
     }
@@ -152,11 +161,10 @@ auto UniqueWordsCounter::Utils::OpenAddressingSet<BucketAllocator>::consumeAndCl
 
 template <typename BucketAllocator>
 auto UniqueWordsCounter::Utils::OpenAddressingSet<BucketAllocator>::nativeEmplace(
+    uint64_t    hash,
     const char *text,
     size_t      len) -> void
 {
-    const auto hash = Utils::Hash::murmur64(text, len);
-
     const auto l = _buckets;
     const auto r = l + _capacity;
     const auto m = l + OpenAddressingSetImpl::getBucketIndex(hash, _capacity);

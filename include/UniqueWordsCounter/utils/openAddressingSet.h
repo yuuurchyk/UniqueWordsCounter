@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstddef>
+#include <cstdint>
 #include <memory>
 #include <string>
 #include <unordered_set>
@@ -25,6 +26,9 @@ public:
     ~OpenAddressingSet();
 
     void emplace(const char *, size_t);
+    // TODO: add documentation
+    void emplaceWithHint(uint64_t hash, const char *, size_t);
+
     void insert(std::string &&);
     void clear();
 
@@ -49,7 +53,7 @@ public:
     void consumeAndClear(OpenAddressingSet &rhs);
 
 private:
-    void nativeEmplace(const char *, size_t);
+    void nativeEmplace(uint64_t, const char *, size_t);
     void rehash();
 
     [[nodiscard]] OpenAddressingSetBucket *allocateUnoccupiedBuckets(size_t capacity);
