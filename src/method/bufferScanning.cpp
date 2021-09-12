@@ -66,5 +66,5 @@ auto UniqueWordsCounter::Method::bufferScanning(const std::string &filename) -> 
 
 auto UniqueWordsCounter::Method::optimizedBaseline(const std::string &filename) -> size_t
 {
-    return bufferScanningImpl<Utils::OpenAddressingSet>(filename);
+    return bufferScanningImpl<Utils::OpenAddressingSet<>>(filename);
 }

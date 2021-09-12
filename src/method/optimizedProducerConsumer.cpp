@@ -22,7 +22,7 @@ auto UniqueWordsCounter::Method::optimizedProducerConsumer(const std::string &fi
     using Utils::Scanning::ScanTask;
 
     auto scanTaskManager    = ItemManager<ScanTask>{};
-    auto producerSetManager = ItemManager<OpenAddressingSet>{};
+    auto producerSetManager = ItemManager<OpenAddressingSet<>>{};
 
     // TODO: refactor to anonymous function
     auto producer = [&scanTaskManager, &producerSetManager]()

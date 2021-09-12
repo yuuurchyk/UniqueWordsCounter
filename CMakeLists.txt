@@ -24,6 +24,8 @@ add_library(
     STATIC
     include/UniqueWordsCounter/methods.h
     include/UniqueWordsCounter/utils/openAddressingSet.h
+    include/UniqueWordsCounter/utils/openAddressingSetImpl.h
+    include/UniqueWordsCounter/utils/openAddressingSetBucket.h
     include/UniqueWordsCounter/utils/hash.h
     include/UniqueWordsCounter/utils/textFiles.h
     include/UniqueWordsCounter/utils/scanning.h
@@ -33,7 +35,6 @@ add_library(
     src/method/producerConsumer.cpp
     src/method/optimizedProducerConsumer.cpp
     src/method/concurrentSetProducerConsumer.cpp
-    src/utils/openAddressingSet.cpp
     src/utils/hash/murmur64.cpp
     src/utils/hash/polynomial.cpp
     src/utils/textFiles.cpp

@@ -5,8 +5,11 @@
 #include <string>
 #include <unordered_set>
 
+#include "UniqueWordsCounter/utils/openAddressingSetBucket.h"
+
 namespace UniqueWordsCounter::Utils
 {
+template <typename BucketAllocator = std::allocator<OpenAddressingSetBucket>>
 class OpenAddressingSet
 {
 public:
@@ -16,10 +19,10 @@ public:
     OpenAddressingSet(const OpenAddressingSet &) = delete;
     OpenAddressingSet &operator=(const OpenAddressingSet &) = delete;
 
-    OpenAddressingSet(OpenAddressingSet &&) = default;
-    OpenAddressingSet &operator=(OpenAddressingSet &&) = default;
+    OpenAddressingSet(OpenAddressingSet &&) = delete;
+    OpenAddressingSet &operator=(OpenAddressingSet &&) = delete;
 
-    ~OpenAddressingSet() = default;
+    ~OpenAddressingSet();
 
     void emplace(const char *, size_t);
     void insert(std::string &&);
@@ -49,22 +52,22 @@ private:
     void nativeEmplace(const char *, size_t);
     void rehash();
 
+    [[nodiscard]] OpenAddressingSetBucket *allocateUnoccupiedBuckets(size_t capacity);
+
     size_t _size;
     size_t _capacity;
 
-    std::unique_ptr<std::byte[]> _bucketsOwner;
+    BucketAllocator          _bucketAllocator{};
+    OpenAddressingSetBucket *_buckets{};
 
     std::unordered_set<std::string> _longWords;
 
-    static constexpr size_t kGrowthFactor{ 2 };
-    static constexpr size_t kDefaultCapacity{ 8 };
-
+    static constexpr size_t kDefaultCapacity{ 8ULL };
+    static constexpr size_t kGrowthFactor{ 2ULL };
     static_assert((kGrowthFactor & (kGrowthFactor - 1)) == 0,
                   "Growth factor should be a power of 2");
-
-    // TODO: remove this check since it's enforced in the constructor
-    static_assert((kDefaultCapacity & (kDefaultCapacity - 1)) == 0,
-                  "Default capacity should be a power of 2");
 };
 
 }    // namespace UniqueWordsCounter::Utils
+
+#include "openAddressingSetImpl.h"
