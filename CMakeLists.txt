@@ -35,6 +35,7 @@ add_library(
     src/method/producerConsumer.cpp
     src/method/optimizedProducerConsumer.cpp
     src/method/concurrentSetProducerConsumer.cpp
+    src/method/distributedOpenAddressingSetProducerConsumer.cpp
     src/utils/hash/murmur64.cpp
     src/utils/hash/polynomial.cpp
     src/utils/textFiles.cpp

@@ -28,13 +28,16 @@ const auto kOptimizedBaseline = "optimizedBaseline"s;
 const auto kProducerConsumer              = "producerConsumer"s;
 const auto kOptimizedProducerConsumer     = "optimizedProducerConsumer"s;
 const auto kConcurrentSetProducerConsumer = "concurrentSetProducerConsumer"s;
+const auto kDistributedOpenAddressingSetProducerConsumer =
+    "distributedOpenAddressingSetProducerConsumer"s;
 
 const auto kMethods = { kBaseline,
                         kBufferScanning,
                         kOptimizedBaseline,
                         kProducerConsumer,
                         kOptimizedProducerConsumer,
-                        kConcurrentSetProducerConsumer };
+                        kConcurrentSetProducerConsumer,
+                        kDistributedOpenAddressingSetProducerConsumer };
 
 auto join(const std::initializer_list<std::string> &args) -> std::string
 {
@@ -121,6 +124,9 @@ auto main(int argc, char **argv) -> int
                                                      const std::string &filepath) {
             return concurrentSetProducerConsumer(filepath, std::max(1U, threadsNum - 1U));
         };
+        result[kDistributedOpenAddressingSetProducerConsumer] =
+            [&threadsNum](const std::string &filepath)
+        { return distributedOpenAddressingSetProducerConsumer(filepath, 8); };
 
         return result;
     }();

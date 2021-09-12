@@ -29,5 +29,7 @@ auto optimizedProducerConsumer(const std::string &filename, size_t producersNum)
     -> size_t;
 auto concurrentSetProducerConsumer(const std::string &filename, size_t producersNum)
     -> size_t;
+auto distributedOpenAddressingSetProducerConsumer(const std::string &filename,
+                                                  size_t producersNum) -> size_t;
 
 }    // namespace UniqueWordsCounter::Method
