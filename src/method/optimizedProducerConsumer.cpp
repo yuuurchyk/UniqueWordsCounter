@@ -10,94 +10,67 @@
 
 #include "tbb/concurrent_queue.h"
 
+#include "UniqueWordsCounter/utils/itemManager.h"
 #include "UniqueWordsCounter/utils/openAddressingSet.h"
 #include "UniqueWordsCounter/utils/scanning.h"
-
-namespace
-{
-constexpr auto kProducerSetCapacity = size_t{ 1 << 10 };
-
-}    // namespace
 
 auto UniqueWordsCounter::Method::optimizedProducerConsumer(const std::string &filename,
                                                            size_t producersNum) -> size_t
 {
+    using Utils::ItemManager;
     using Utils::OpenAddressingSet;
+    using Utils::Scanning::ScanTask;
 
-    auto taskManager = Utils::Scanning::TaskManager{};
-
-    // TODO: refactor to use templated TaskManager
-    auto producerSetsOwner      = std::vector<std::unique_ptr<OpenAddressingSet>>{};
-    auto producerSetsOwnerMutex = std::mutex{};
-
-    auto pendingProducerSets   = tbb::concurrent_bounded_queue<OpenAddressingSet *>{};
-    auto availableProducerSets = tbb::concurrent_bounded_queue<OpenAddressingSet *>{};
-
-    auto allocateProducerSet = [&producerSetsOwner,
-                                &producerSetsOwnerMutex,
-                                &availableProducerSets]() -> OpenAddressingSet *
-    {
-        OpenAddressingSet *result{};
-
-        if (!availableProducerSets.try_pop(result))
-        {
-            std::scoped_lock<std::mutex> lck{ producerSetsOwnerMutex };
-            producerSetsOwner.emplace_back(new OpenAddressingSet{ kProducerSetCapacity });
-            result = producerSetsOwner.back().get();
-        }
-
-        return result;
-    };
+    auto scanTaskManager    = ItemManager<ScanTask>{ Utils::Scanning::cleanUpScanTask };
+    auto producerSetManager = ItemManager<OpenAddressingSet>{};
 
     // TODO: refactor to anonymous function
-    auto producer = [&pendingProducerSets, &allocateProducerSet, &taskManager]()
+    auto producer = [&scanTaskManager, &producerSetManager]()
     {
-        auto producerSet = allocateProducerSet();
+        auto producerSet = producerSetManager.allocate(1ULL << 10);
 
         while (true)
         {
-            auto currentTask = taskManager.retrievePendingTask();
+            auto currentScanTask = scanTaskManager.retrievePending();
 
-            if (currentTask.isDeathPill())
+            if (currentScanTask.isDeathPill())
             {
-                pendingProducerSets.push(producerSet);
+                producerSetManager.setPending(producerSet);
                 return;
             }
 
-            auto wordCallback = [&producerSet,
-                                 &allocateProducerSet,
-                                 &pendingProducerSets](const char *text, size_t len)
+            auto wordCallback =
+                [&producerSet, &producerSetManager](const char *text, size_t len)
             {
                 producerSet->emplace(text, len);
                 if (producerSet->elementsUntilRehash() <= size_t{ 1 })
                 {
-                    pendingProducerSets.push(producerSet);
-                    producerSet = allocateProducerSet();
+                    producerSetManager.setPending(producerSet);
+                    producerSet = producerSetManager.allocate();
                 }
             };
-            auto lastWordCallback = [&currentTask](std::string &&lastWord)
-            { currentTask->lastWordFromCurrentTask.set_value(std::move(lastWord)); };
+            auto lastWordCallback = [&currentScanTask](std::string &&lastWord)
+            { currentScanTask->lastWordFromCurrentTask.set_value(std::move(lastWord)); };
 
-            Utils::Scanning::bufferScanning(currentTask->buffer,
-                                            currentTask->lastWordFromPreviousTask.get(),
-                                            wordCallback,
-                                            lastWordCallback);
+            Utils::Scanning::bufferScanning(
+                currentScanTask->buffer,
+                currentScanTask->lastWordFromPreviousTask.get(),
+                wordCallback,
+                lastWordCallback);
         }
     };
 
     auto consumerSet = OpenAddressingSet{};
-    auto consumer    = [&pendingProducerSets, &availableProducerSets, &consumerSet]()
+    auto consumer    = [&producerSetManager, &consumerSet]()
     {
         while (true)
         {
-            OpenAddressingSet *producerSet{};
-            while (!pendingProducerSets.pop(producerSet)) {}
+            auto producerSet = producerSetManager.retrievePending();
 
-            if (producerSet == nullptr)
+            if (producerSet.isDeathPill())
                 return;
 
             consumerSet.consumeAndClear(*producerSet);
-            availableProducerSets.push(producerSet);
         }
     };
 
@@ -108,10 +81,10 @@ auto UniqueWordsCounter::Method::optimizedProducerConsumer(const std::string &fi
 
     auto consumerThread = std::thread{ consumer };
 
-    Utils::Scanning::reader(filename, taskManager);
+    Utils::Scanning::scanner(filename, scanTaskManager);
     for (auto &&producerThread : producerThreads)
         producerThread.join();
-    pendingProducerSets.push(nullptr);
+    producerSetManager.addDeathPill();
     consumerThread.join();
 
     return consumerSet.size();

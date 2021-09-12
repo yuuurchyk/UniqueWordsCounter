@@ -27,6 +27,7 @@ add_library(
     include/UniqueWordsCounter/utils/hash.h
     include/UniqueWordsCounter/utils/textFiles.h
     include/UniqueWordsCounter/utils/scanning.h
+    include/UniqueWordsCounter/utils/itemManager.h
     src/method/baseline.cpp
     src/method/bufferScanning.cpp
     src/method/producerConsumer.cpp

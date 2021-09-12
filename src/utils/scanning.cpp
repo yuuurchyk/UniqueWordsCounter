@@ -109,72 +109,20 @@ void UniqueWordsCounter::Utils::Scanning::bufferScanning(
     }
 }
 
-UniqueWordsCounter::Utils::Scanning::TaskManager::TaskGuard::TaskGuard(
-    TaskManager &manager)
-    : _manager{ manager }
+void UniqueWordsCounter::Utils::Scanning::cleanUpScanTask(ScanTask &task)
 {
-    while (!_manager._pendingTasks.pop(_task)) {}
-    if (isDeathPill())
-        _manager._pendingTasks.push(_task);
+    task.lastWordFromCurrentTask  = {};
+    task.lastWordFromPreviousTask = {};
 }
 
-bool UniqueWordsCounter::Utils::Scanning::TaskManager::TaskGuard::isDeathPill() const
-{
-    return _task == nullptr;
-}
-
-auto UniqueWordsCounter::Utils::Scanning::TaskManager::TaskGuard::operator->() -> Task *
-{
-    if (isDeathPill())
-        throw std::runtime_error{ "Death pill cannot be dereferenced" };
-    return _task;
-}
-
-UniqueWordsCounter::Utils::Scanning::TaskManager::TaskGuard::~TaskGuard()
-{
-    if (!isDeathPill())
-    {
-        _task->lastWordFromCurrentTask  = {};
-        _task->lastWordFromPreviousTask = {};
-        _manager._availableTasks.push(_task);
-    }
-}
-
-auto UniqueWordsCounter::Utils::Scanning::TaskManager::allocateTask() -> Task *
-{
-    if (Task * result{}; _availableTasks.try_pop(result))
-        return result;
-
-    std::scoped_lock lck{ _tasksOwnerMutex };
-    _tasksOwner.emplace_back(new Task);
-
-    return _tasksOwner.back().get();
-}
-
-void UniqueWordsCounter::Utils::Scanning::TaskManager::setPending(Task *task)
-{
-    _pendingTasks.push(task);
-}
-
-auto UniqueWordsCounter::Utils::Scanning::TaskManager::retrievePendingTask() -> TaskGuard
-{
-    return TaskGuard{ *this };
-}
-
-void UniqueWordsCounter::Utils::Scanning::TaskManager::addDeathPill()
-{
-    _wasDeathPillAdded = true;
-    _pendingTasks.push(nullptr);
-}
-
-void UniqueWordsCounter::Utils::Scanning::reader(const std::string &filename,
-                                                 TaskManager &      manager)
+void UniqueWordsCounter::Utils::Scanning::scanner(const std::string &    filename,
+                                                  ItemManager<ScanTask> &manager)
 {
     auto file = Utils::TextFiles::getFile(filename);
 
     auto firstTask = [&manager, &file]()
     {
-        auto firstTask = manager.allocateTask();
+        auto firstTask = manager.allocate();
 
         auto lastWordBeforeFirstTask = std::promise<std::string>{};
         lastWordBeforeFirstTask.set_value({});
@@ -188,7 +136,7 @@ void UniqueWordsCounter::Utils::Scanning::reader(const std::string &filename,
     auto previousTask = firstTask;
     while (previousTask->buffer.size() > 0)
     {
-        auto currentTask = manager.allocateTask();
+        auto currentTask = manager.allocate();
 
         currentTask->buffer.read(file);
         currentTask->lastWordFromPreviousTask =

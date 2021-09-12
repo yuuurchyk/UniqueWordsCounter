@@ -5,34 +5,39 @@
 
 #include "tbb/concurrent_unordered_set.h"
 
+#include "UniqueWordsCounter/utils/itemManager.h"
 #include "UniqueWordsCounter/utils/scanning.h"
 
 auto UniqueWordsCounter::Method::concurrentSetProducerConsumer(
     const std::string &filename,
     size_t             producersNum) -> size_t
 {
-    auto taskManager = Utils::Scanning::TaskManager{};
-    auto uniqueWords = tbb::concurrent_unordered_set<std::string>{};
+    using Utils::ItemManager;
+    using Utils::Scanning::ScanTask;
+
+    auto scanTaskManager = ItemManager<ScanTask>{ Utils::Scanning::cleanUpScanTask };
+    auto uniqueWords     = tbb::concurrent_unordered_set<std::string>{};
 
     // TODO: refactor as anonymous function
-    auto producer = [&taskManager, &uniqueWords]()
+    auto producer = [&scanTaskManager, &uniqueWords]()
     {
         while (true)
         {
-            auto currentTask = taskManager.retrievePendingTask();
+            auto currentScanTask = scanTaskManager.retrievePending();
 
-            if (currentTask.isDeathPill())
+            if (currentScanTask.isDeathPill())
                 return;
 
             auto wordCallback = [&uniqueWords](const char *text, size_t len)
             { uniqueWords.emplace(text, len); };
-            auto lastWordCallback = [&currentTask](std::string &&lastWord)
-            { currentTask->lastWordFromCurrentTask.set_value(std::move(lastWord)); };
+            auto lastWordCallback = [&currentScanTask](std::string &&lastWord)
+            { currentScanTask->lastWordFromCurrentTask.set_value(std::move(lastWord)); };
 
-            Utils::Scanning::bufferScanning(currentTask->buffer,
-                                            currentTask->lastWordFromPreviousTask.get(),
-                                            wordCallback,
-                                            lastWordCallback);
+            Utils::Scanning::bufferScanning(
+                currentScanTask->buffer,
+                currentScanTask->lastWordFromPreviousTask.get(),
+                wordCallback,
+                lastWordCallback);
         }
     };
 
@@ -41,7 +46,7 @@ auto UniqueWordsCounter::Method::concurrentSetProducerConsumer(
     for (auto i = size_t{}; i < producersNum; ++i)
         producerThreads.emplace_back(producer);
 
-    Utils::Scanning::reader(filename, taskManager);
+    Utils::Scanning::scanner(filename, scanTaskManager);
 
     for (auto &&producerThread : producerThreads)
         producerThread.join();
