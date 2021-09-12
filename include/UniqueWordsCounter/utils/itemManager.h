@@ -1,9 +1,11 @@
 #pragma once
 
+#include <cstddef>
 #include <functional>
 #include <memory>
-#include <mutex>
+#include <new>
 #include <stdexcept>
+#include <string>
 #include <type_traits>
 #include <utility>
 #include <vector>
@@ -13,21 +15,28 @@
 namespace UniqueWordsCounter::Utils
 {
 // clang-format off
-template <typename T>
+template <typename Item, typename ItemAllocator=std::allocator<Item>>
     requires(
-        std::is_same_v<T, typename std::decay<T>::type> &&
-        !std::is_pointer_v<T>
+        std::is_same_v<Item, typename std::decay<Item>::type> &&
+        !std::is_pointer_v<Item>
     )
 class ItemManager
 // clang-format on
 {
 public:
-    using item_type = T;
+    using item_type           = Item;
+    using item_allocator_type = ItemAllocator;
 
-    ItemManager() = default;
-    ItemManager(std::function<void(item_type &)> itemCleanupFn)
-        : _itemCleanupFn{ std::move(itemCleanupFn) }
+    explicit ItemManager(size_t channelsNum = 1ULL) : _channelsNum{ channelsNum }
     {
+        if (channelsNum == 0)
+            throw std::runtime_error{ "Number of channels should be positive" };
+
+        // prevent false sharing
+        _pendingItems.reserve(channelsNum);
+        for (auto i = size_t{}; i < channelsNum; ++i)
+            _pendingItems.emplace_back(new (std::align_val_t{ 64 })
+                                           tbb::concurrent_bounded_queue<item_type *>);
     }
 
     ItemManager(const ItemManager &) = delete;
@@ -36,7 +45,26 @@ public:
     ItemManager(ItemManager &&) = delete;
     ItemManager &operator=(ItemManager &&) = delete;
 
-    ~ItemManager() = default;
+    ~ItemManager()
+    {
+        if (!_wasDeathPillAdded)
+            unsafe_addDeathPillToAllChannels();
+
+        while (true)
+        {
+            item_type *current{};
+            while (!_ownerItems.pop(current)) {}
+            if (current == nullptr)
+            {
+                break;
+            }
+            else
+            {
+                std::destroy_at(current);
+                _allocator.deallocate(current, 1ULL);
+            }
+        }
+    }
 
     class ItemGuard
     {
@@ -50,11 +78,7 @@ public:
         ~ItemGuard()
         {
             if (!isDeathPill())
-            {
-                if (const auto &fn = _manager._itemCleanupFn; fn != nullptr)
-                    fn(*_item);
                 _manager._availableItems.push(_item);
-            }
         }
 
         bool       isDeathPill() const { return _item == nullptr; }
@@ -63,11 +87,11 @@ public:
 
     private:
         friend class ItemManager;
-        ItemGuard(ItemManager &manager) : _manager{ manager }
+        ItemGuard(ItemManager &manager, size_t channelIndex) : _manager{ manager }
         {
-            while (!_manager._pendingItems.pop(_item)) {}
+            while (!_manager._pendingItems[channelIndex]->pop(_item)) {}
             if (isDeathPill())
-                _manager._pendingItems.push(_item);
+                _manager._pendingItems[channelIndex]->push(_item);
         }
 
     private:
@@ -75,37 +99,66 @@ public:
         item_type *  _item{};
     };
 
-    template <typename... Args>
-    item_type *allocate(Args &&...args)
+    [[nodiscard]] item_type *reuse()
     {
-        if (item_type * result{}; _availableItems.try_pop(result))
+        if (item_type * result; _availableItems.try_pop(result))
             return result;
-
-        std::scoped_lock lck{ _itemsOwnerMutex };
-        _itemsOwner.emplace_back(new item_type{ std::forward<Args>(args)... });
-
-        return _itemsOwner.back().get();
+        return nullptr;
     }
-    void setPending(item_type *item) { _pendingItems.push(item); }
 
-    void addDeathPill()
+    template <typename... Args>
+    [[nodiscard]] item_type *allocate(Args &&...args)
+    {
+        auto item = _allocator.allocate(1ULL);
+        std::construct_at(item, std::forward<Args>(args)...);
+
+        _ownerItems.push(item);
+
+        return item;
+    }
+
+    void setPending(item_type &item, size_t channel = 0ULL)
+    {
+        checkChannelIndex(channel);
+        _pendingItems[channel]->push(&item);
+    }
+
+    void unsafe_addDeathPillToAllChannels()
     {
         _wasDeathPillAdded = true;
-        _pendingItems.push(nullptr);
+        for (size_t channel{}; channel < channelsNum(); ++channel)
+            _pendingItems[channel]->push(nullptr);
+        _ownerItems.push(nullptr);
     }
 
-    ItemGuard retrievePending() { return ItemGuard{ *this }; }
+    [[nodiscard]] ItemGuard retrievePending(size_t channel = 0ULL)
+    {
+        checkChannelIndex(channel);
+        return ItemGuard{ *this, channel };
+    }
+
+    [[nodiscard]] inline size_t channelsNum() const noexcept { return _channelsNum; }
 
 private:
-    std::mutex                              _itemsOwnerMutex;
-    std::vector<std::unique_ptr<item_type>> _itemsOwner;
+    inline void checkChannelIndex(size_t channel) const
+    {
+        using namespace std::string_literals;
+        if (channel >= channelsNum())
+            throw std::runtime_error{ "Invalid channel: "s + std::to_string(channel) };
+    }
 
-    tbb::concurrent_bounded_queue<item_type *> _pendingItems;
+private:
+    tbb::concurrent_bounded_queue<item_type *> _ownerItems;
+
+    const size_t _channelsNum;
+    std::vector<std::unique_ptr<tbb::concurrent_bounded_queue<item_type *>>>
+        _pendingItems;
+
     tbb::concurrent_bounded_queue<item_type *> _availableItems;
 
     bool _wasDeathPillAdded{};
 
-    const std::function<void(item_type &)> _itemCleanupFn{};
+    item_allocator_type _allocator{};
 };
 
 }    // namespace UniqueWordsCounter::Utils

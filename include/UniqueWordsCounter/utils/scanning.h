@@ -52,7 +52,6 @@ struct ScanTask
     std::future<std::string>  lastWordFromPreviousTask{};
     std::promise<std::string> lastWordFromCurrentTask{};
 };
-void cleanUpScanTask(ScanTask &);
 
 void scanner(const std::string &filename, ItemManager<ScanTask> &);
 

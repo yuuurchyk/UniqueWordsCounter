@@ -21,7 +21,7 @@ auto UniqueWordsCounter::Method::optimizedProducerConsumer(const std::string &fi
     using Utils::OpenAddressingSet;
     using Utils::Scanning::ScanTask;
 
-    auto scanTaskManager    = ItemManager<ScanTask>{ Utils::Scanning::cleanUpScanTask };
+    auto scanTaskManager    = ItemManager<ScanTask>{};
     auto producerSetManager = ItemManager<OpenAddressingSet>{};
 
     // TODO: refactor to anonymous function
@@ -35,7 +35,7 @@ auto UniqueWordsCounter::Method::optimizedProducerConsumer(const std::string &fi
 
             if (currentScanTask.isDeathPill())
             {
-                producerSetManager.setPending(producerSet);
+                producerSetManager.setPending(*producerSet);
                 return;
             }
 
@@ -45,8 +45,10 @@ auto UniqueWordsCounter::Method::optimizedProducerConsumer(const std::string &fi
                 producerSet->emplace(text, len);
                 if (producerSet->elementsUntilRehash() <= size_t{ 1 })
                 {
-                    producerSetManager.setPending(producerSet);
-                    producerSet = producerSetManager.allocate();
+                    producerSetManager.setPending(*producerSet);
+                    producerSet = producerSetManager.reuse();
+                    if (producerSet == nullptr)
+                        producerSet = producerSetManager.allocate();
                 }
             };
             auto lastWordCallback = [&currentScanTask](std::string &&lastWord)
@@ -84,7 +86,7 @@ auto UniqueWordsCounter::Method::optimizedProducerConsumer(const std::string &fi
     Utils::Scanning::scanner(filename, scanTaskManager);
     for (auto &&producerThread : producerThreads)
         producerThread.join();
-    producerSetManager.addDeathPill();
+    producerSetManager.unsafe_addDeathPillToAllChannels();
     consumerThread.join();
 
     return consumerSet.size();

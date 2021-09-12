@@ -109,12 +109,6 @@ void UniqueWordsCounter::Utils::Scanning::bufferScanning(
     }
 }
 
-void UniqueWordsCounter::Utils::Scanning::cleanUpScanTask(ScanTask &task)
-{
-    task.lastWordFromCurrentTask  = {};
-    task.lastWordFromPreviousTask = {};
-}
-
 void UniqueWordsCounter::Utils::Scanning::scanner(const std::string &    filename,
                                                   ItemManager<ScanTask> &manager)
 {
@@ -136,15 +130,23 @@ void UniqueWordsCounter::Utils::Scanning::scanner(const std::string &    filenam
     auto previousTask = firstTask;
     while (previousTask->buffer.size() > 0)
     {
-        auto currentTask = manager.allocate();
+        auto currentTask = manager.reuse();
+        if (currentTask == nullptr)
+            currentTask = manager.allocate();
+        else
+        {
+            currentTask->lastWordFromCurrentTask  = {};
+            currentTask->lastWordFromPreviousTask = {};
+        }
 
         currentTask->buffer.read(file);
         currentTask->lastWordFromPreviousTask =
             previousTask->lastWordFromCurrentTask.get_future();
 
-        manager.setPending(previousTask);
+        manager.setPending(*previousTask);
         previousTask = currentTask;
     }
-    manager.setPending(previousTask);
-    manager.addDeathPill();
+
+    manager.setPending(*previousTask);
+    manager.unsafe_addDeathPillToAllChannels();
 }
