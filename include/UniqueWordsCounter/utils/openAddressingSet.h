@@ -79,11 +79,11 @@ private:
     size_t _size;
     size_t _capacity;
 
-    Bucket *_buckets{};
+    Bucket *_buckets;
 
-    Allocator  _allocator{};
-    size_t     _bytesAllocated{};
-    std::byte *_memory{};
+    Allocator  _allocator;
+    size_t     _bytesAllocated;
+    std::byte *_memory;
 
     std::unordered_set<std::string> _longWords;
 };

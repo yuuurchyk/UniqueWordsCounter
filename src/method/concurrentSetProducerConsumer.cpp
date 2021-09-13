@@ -15,7 +15,7 @@ auto UniqueWordsCounter::Method::concurrentSetProducerConsumer(
     using Utils::ItemManager;
     using Utils::Scanning::ScanTask;
 
-    auto scanTaskManager = ItemManager<ScanTask>{};
+    auto scanTaskManager = ItemManager<ScanTask<>>{};
     auto uniqueWords     = tbb::concurrent_unordered_set<std::string>{};
 
     // TODO: refactor as anonymous function

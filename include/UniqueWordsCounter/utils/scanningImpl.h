@@ -1,4 +1,6 @@
-#include "UniqueWordsCounter/utils/scanning.h"
+#pragma once
+
+#include "scanning.h"
 
 #include <cstring>
 #include <stdexcept>
@@ -6,11 +8,18 @@
 
 #include "UniqueWordsCounter/utils/textFiles.h"
 
-UniqueWordsCounter::Utils::Scanning::Buffer::Buffer(const size_t capacity)
-    : _capacity{ capacity }, _buffer{ new char[capacity + 6] }, _data{ _buffer.get() + 3 }
+template <typename Allocator>
+UniqueWordsCounter::Utils::Scanning::Buffer<Allocator>::Buffer(size_t           capacity,
+                                                               const Allocator &allocator)
+    : _capacity{ capacity }, _allocator{ allocator }
 {
     if (_capacity == 0)
         throw std::runtime_error{ "Buffer size should be positive, got 0" };
+
+    _bytesAllocated = sizeof(char) * (_capacity + 6);
+    _memory         = _allocator.allocate(_bytesAllocated);
+
+    _data = reinterpret_cast<char *>(_memory) + 3;
 
     _data[-3] = '\0';
     _data[-2] = 'a';
@@ -21,7 +30,14 @@ UniqueWordsCounter::Utils::Scanning::Buffer::Buffer(const size_t capacity)
     _data[2] = '\0';
 }
 
-void UniqueWordsCounter::Utils::Scanning::Buffer::read(std::ifstream &file)
+template <typename Allocator>
+UniqueWordsCounter::Utils::Scanning::Buffer<Allocator>::~Buffer()
+{
+    _allocator.deallocate(_memory, _bytesAllocated);
+}
+
+template <typename Allocator>
+void UniqueWordsCounter::Utils::Scanning::Buffer<Allocator>::read(std::ifstream &file)
 {
     file.read(_data, _capacity);
     _size = file.gcount();
@@ -31,8 +47,9 @@ void UniqueWordsCounter::Utils::Scanning::Buffer::read(std::ifstream &file)
     _data[size() + 2] = '\0';
 }
 
+template <typename Allocator>
 void UniqueWordsCounter::Utils::Scanning::bufferScanning(
-    const Buffer &                            buffer,
+    const Buffer<Allocator> &                 buffer,
     std::string                               lastWordFromPreviousChunk,
     std::function<void(const char *, size_t)> wordCallback,
     std::function<void(std::string &&)>       lastWordCallback)
@@ -109,8 +126,10 @@ void UniqueWordsCounter::Utils::Scanning::bufferScanning(
     }
 }
 
-void UniqueWordsCounter::Utils::Scanning::scanner(const std::string &    filename,
-                                                  ItemManager<ScanTask> &manager)
+template <typename Allocator>
+void UniqueWordsCounter::Utils::Scanning::scanner(
+    const std::string &               filename,
+    ItemManager<ScanTask<Allocator>> &manager)
 {
     auto file = Utils::TextFiles::getFile(filename);
 

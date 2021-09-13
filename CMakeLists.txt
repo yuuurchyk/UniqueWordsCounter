@@ -27,7 +27,7 @@ add_library(
     include/UniqueWordsCounter/utils/openAddressingSetImpl.h
     include/UniqueWordsCounter/utils/hash.h
     include/UniqueWordsCounter/utils/textFiles.h
-    include/UniqueWordsCounter/utils/scanning.h
+    include/UniqueWordsCounter/utils/scanningImpl.h
     include/UniqueWordsCounter/utils/itemManager.h
     src/method/baseline.cpp
     src/method/bufferScanning.cpp
@@ -38,7 +38,6 @@ add_library(
     src/utils/hash/murmur64.cpp
     src/utils/hash/polynomial.cpp
     src/utils/textFiles.cpp
-    src/utils/scanning.cpp
 )
 target_include_directories(lib_${PROJECT_NAME} PUBLIC include PRIVATE src)
 target_link_libraries(lib_${PROJECT_NAME} PRIVATE ${CMAKE_THREAD_LIBS_INIT} TBB::tbb)

@@ -35,7 +35,7 @@ auto UniqueWordsCounter::Method::distributedOpenAddressingSetProducerConsumer(
     using Utils::OpenAddressingSet;
     using Utils::Scanning::ScanTask;
 
-    auto scanTaskManager    = ItemManager<ScanTask>{};
+    auto scanTaskManager    = ItemManager<ScanTask<>>{};
     auto producerSetManager = ItemManager<OpenAddressingSet<>>{ consumersNum };
 
     // TODO: refactor to anonymous function

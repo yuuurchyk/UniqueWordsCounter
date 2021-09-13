@@ -36,7 +36,7 @@ auto bufferScanningImpl(const std::string &filename) -> size_t
     auto lastWord    = std::string{};
 
     static constexpr auto kBufferSize = size_t{ 1ULL << 20 };
-    auto                  buffer      = Scanning::Buffer{ kBufferSize };
+    auto                  buffer      = Scanning::Buffer<>{ kBufferSize };
 
     do
     {

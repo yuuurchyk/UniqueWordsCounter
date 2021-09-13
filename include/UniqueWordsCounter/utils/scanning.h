@@ -11,13 +11,11 @@
 
 namespace UniqueWordsCounter::Utils::Scanning
 {
-// TODO: add template argument for capacity?
+template <typename Allocator = std::allocator<std::byte>>
 class Buffer
 {
 public:
-    explicit Buffer(const size_t capacity);
-
-    Buffer() = delete;
+    explicit Buffer(size_t capacity, const Allocator &allocator = Allocator{});
 
     Buffer(const Buffer &) = delete;
     Buffer &operator=(const Buffer &) = delete;
@@ -25,10 +23,10 @@ public:
     Buffer(Buffer &&) = default;
     Buffer &operator=(Buffer &&) = default;
 
-    ~Buffer() = default;
+    ~Buffer();
 
-    [[nodiscard]] inline size_t size() const noexcept { return _size; }
-    [[nodiscard]] const char *  data() const noexcept { return _data; }
+    [[nodiscard]] inline size_t      size() const noexcept { return _size; }
+    [[nodiscard]] inline const char *data() const noexcept { return _data; }
 
     void read(std::ifstream &);
 
@@ -36,23 +34,30 @@ private:
     size_t _capacity;
     size_t _size{};
 
-    std::unique_ptr<char[]> _buffer;
-    char *                  _data;
+    Allocator  _allocator;
+    size_t     _bytesAllocated;
+    std::byte *_memory;
+
+    char *_data;
 };
 
-// TODO: take const reference to std::function
-void bufferScanning(const Buffer &,
-                    std::string                               lastWordFromPreviousChunk,
-                    std::function<void(const char *, size_t)> wordCallback,
-                    std::function<void(std::string &&)>       lastWordCallback);
+template <typename Allocator = std::allocator<std::byte>>
+void bufferScanning(const Buffer<Allocator> &,
+                    std::string                                lastWordFromPreviousChunk,
+                    std::function<void(const char *, size_t)> &wordCallback,
+                    std::function<void(std::string &&)> &      lastWordCallback);
 
+template <typename Allocator = std::allocator<std::byte>>
 struct ScanTask
 {
-    Buffer                    buffer{ 1ULL << 20 };
+    Buffer<Allocator>         buffer{ 1ULL << 20 };
     std::future<std::string>  lastWordFromPreviousTask{};
     std::promise<std::string> lastWordFromCurrentTask{};
 };
 
-void scanner(const std::string &filename, ItemManager<ScanTask> &);
+template <typename Allocator = std::allocator<std::byte>>
+void scanner(const std::string &filename, ItemManager<ScanTask<Allocator>> &);
 
 }    // namespace UniqueWordsCounter::Utils::Scanning
+
+#include "scanningImpl.h"
