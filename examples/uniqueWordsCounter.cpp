@@ -30,6 +30,7 @@ const auto kOptimizedProducerConsumer     = "optimizedProducerConsumer"s;
 const auto kConcurrentSetProducerConsumer = "concurrentSetProducerConsumer"s;
 const auto kDistributedOpenAddressingSetProducerConsumer =
     "distributedOpenAddressingSetProducerConsumer"s;
+const auto kDistributedSetMemoryPool = "distributedSetMemoryPool"s;
 
 const auto kMethods = { kBaseline,
                         kBufferScanning,
@@ -37,7 +38,8 @@ const auto kMethods = { kBaseline,
                         kProducerConsumer,
                         kOptimizedProducerConsumer,
                         kConcurrentSetProducerConsumer,
-                        kDistributedOpenAddressingSetProducerConsumer };
+                        kDistributedOpenAddressingSetProducerConsumer,
+                        kDistributedSetMemoryPool };
 
 auto join(const std::initializer_list<std::string> &args) -> std::string
 {
@@ -127,6 +129,8 @@ auto main(int argc, char **argv) -> int
         result[kDistributedOpenAddressingSetProducerConsumer] =
             [&threadsNum](const std::string &filepath)
         { return distributedOpenAddressingSetProducerConsumer(filepath, 8); };
+        result[kDistributedSetMemoryPool] = [&threadsNum](const std::string &filepath)
+        { return distributedSetMemoryPool(filepath, 8); };
 
         return result;
     }();

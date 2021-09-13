@@ -49,10 +49,10 @@ void UniqueWordsCounter::Utils::Scanning::Buffer<Allocator>::read(std::ifstream 
 
 template <typename Allocator>
 void UniqueWordsCounter::Utils::Scanning::bufferScanning(
-    const Buffer<Allocator> &                 buffer,
-    std::string                               lastWordFromPreviousChunk,
-    std::function<void(const char *, size_t)> wordCallback,
-    std::function<void(std::string &&)>       lastWordCallback)
+    const Buffer<Allocator> &                        buffer,
+    std::string                                      lastWordFromPreviousChunk,
+    const std::function<void(const char *, size_t)> &wordCallback,
+    const std::function<void(std::string &&)> &      lastWordCallback)
 {
     static constexpr const char *kSpaceCharacters{ " \n\t\r\f\v" };
 

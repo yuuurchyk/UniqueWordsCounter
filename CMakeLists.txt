@@ -35,12 +35,13 @@ add_library(
     src/method/optimizedProducerConsumer.cpp
     src/method/concurrentSetProducerConsumer.cpp
     src/method/distributedOpenAddressingSetProducerConsumer.cpp
+    src/method/distributedSetMemoryPool.cpp
     src/utils/hash/murmur64.cpp
     src/utils/hash/polynomial.cpp
     src/utils/textFiles.cpp
 )
 target_include_directories(lib_${PROJECT_NAME} PUBLIC include PRIVATE src)
-target_link_libraries(lib_${PROJECT_NAME} PRIVATE ${CMAKE_THREAD_LIBS_INIT} TBB::tbb)
+target_link_libraries(lib_${PROJECT_NAME} PRIVATE ${CMAKE_THREAD_LIBS_INIT} TBB::tbb TBB::tbbmalloc)
 target_compile_definitions(lib_${PROJECT_NAME} PRIVATE DATA_FOLDER="${CMAKE_CURRENT_SOURCE_DIR}/data")
 
 add_executable(${PROJECT_NAME} examples/uniqueWordsCounter.cpp)

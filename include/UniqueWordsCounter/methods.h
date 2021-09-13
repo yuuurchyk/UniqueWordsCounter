@@ -31,5 +31,6 @@ auto concurrentSetProducerConsumer(const std::string &filename, size_t producers
     -> size_t;
 auto distributedOpenAddressingSetProducerConsumer(const std::string &filename,
                                                   size_t producersNum) -> size_t;
+auto distributedSetMemoryPool(const std::string &filename, size_t consumersNum) -> size_t;
 
 }    // namespace UniqueWordsCounter::Method

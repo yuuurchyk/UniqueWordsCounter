@@ -43,14 +43,18 @@ private:
 
 template <typename Allocator = std::allocator<std::byte>>
 void bufferScanning(const Buffer<Allocator> &,
-                    std::string                                lastWordFromPreviousChunk,
-                    std::function<void(const char *, size_t)> &wordCallback,
-                    std::function<void(std::string &&)> &      lastWordCallback);
+                    std::string lastWordFromPreviousChunk,
+                    const std::function<void(const char *, size_t)> &wordCallback,
+                    const std::function<void(std::string &&)> &      lastWordCallback);
 
 template <typename Allocator = std::allocator<std::byte>>
 struct ScanTask
 {
-    Buffer<Allocator>         buffer{ 1ULL << 20 };
+    ScanTask(const Allocator &allocator = Allocator{}) : buffer{ 1ULL << 20, allocator }
+    {
+    }
+
+    Buffer<Allocator>         buffer;
     std::future<std::string>  lastWordFromPreviousTask{};
     std::promise<std::string> lastWordFromCurrentTask{};
 };
