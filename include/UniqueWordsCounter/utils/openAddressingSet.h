@@ -4,30 +4,31 @@
 #include <cstdint>
 #include <memory>
 #include <string>
+#include <tuple>
 #include <unordered_set>
-
-#include "UniqueWordsCounter/utils/openAddressingSetBucket.h"
 
 namespace UniqueWordsCounter::Utils
 {
-template <typename BucketAllocator = std::allocator<OpenAddressingSetBucket>>
+template <typename Allocator = std::allocator<std::byte>>
 class OpenAddressingSet
 {
 public:
-    OpenAddressingSet() : OpenAddressingSet(kDefaultCapacity) {}
-    explicit OpenAddressingSet(size_t capacity);
+    using hash_type = uint64_t;
+
+    explicit OpenAddressingSet(const Allocator &allocator = Allocator{});
+    explicit OpenAddressingSet(size_t capacity, const Allocator &allocator = Allocator{});
 
     OpenAddressingSet(const OpenAddressingSet &) = delete;
     OpenAddressingSet &operator=(const OpenAddressingSet &) = delete;
 
-    OpenAddressingSet(OpenAddressingSet &&) = delete;
+    OpenAddressingSet(OpenAddressingSet &&) = default;
     OpenAddressingSet &operator=(OpenAddressingSet &&) = delete;
 
     ~OpenAddressingSet();
 
     void emplace(const char *, size_t);
     // TODO: add documentation
-    void emplaceWithHint(uint64_t hash, const char *, size_t);
+    void emplaceWithHint(hash_type hash, const char *, size_t);
 
     void insert(std::string &&);
     void clear();
@@ -53,23 +54,38 @@ public:
     void consumeAndClear(OpenAddressingSet &rhs);
 
 private:
-    void nativeEmplace(uint64_t, const char *, size_t);
+    void nativeEmplace(hash_type, const char *, size_t);
     void rehash();
 
-    [[nodiscard]] OpenAddressingSetBucket *allocateUnoccupiedBuckets(size_t capacity);
+    class Bucket;
+    [[nodiscard]] std::tuple<Bucket *, size_t, std::byte *>
+        allocateUnoccupiedBuckets(size_t capacity);
 
-    size_t _size;
-    size_t _capacity;
+    [[nodiscard]] static inline size_t  getBucketIndex(hash_type hash, size_t capacity);
+    [[nodiscard]] static inline Bucket *findFreeBucket(Bucket *    l,
+                                                       Bucket *    r,
+                                                       hash_type   hash,
+                                                       const char *text,
+                                                       size_t      len);
 
-    BucketAllocator          _bucketAllocator{};
-    OpenAddressingSetBucket *_buckets{};
-
-    std::unordered_set<std::string> _longWords;
-
+private:
     static constexpr size_t kDefaultCapacity{ 8ULL };
+
     static constexpr size_t kGrowthFactor{ 2ULL };
     static_assert((kGrowthFactor & (kGrowthFactor - 1)) == 0,
                   "Growth factor should be a power of 2");
+
+private:
+    size_t _size;
+    size_t _capacity;
+
+    Bucket *_buckets{};
+
+    Allocator  _allocator{};
+    size_t     _bytesAllocated{};
+    std::byte *_memory{};
+
+    std::unordered_set<std::string> _longWords;
 };
 
 }    // namespace UniqueWordsCounter::Utils

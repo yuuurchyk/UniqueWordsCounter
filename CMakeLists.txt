@@ -25,7 +25,6 @@ add_library(
     include/UniqueWordsCounter/methods.h
     include/UniqueWordsCounter/utils/openAddressingSet.h
     include/UniqueWordsCounter/utils/openAddressingSetImpl.h
-    include/UniqueWordsCounter/utils/openAddressingSetBucket.h
     include/UniqueWordsCounter/utils/hash.h
     include/UniqueWordsCounter/utils/textFiles.h
     include/UniqueWordsCounter/utils/scanning.h
