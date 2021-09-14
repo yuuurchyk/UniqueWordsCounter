@@ -1,22 +1,30 @@
 #include "UniqueWordsCounter/methods.h"
 
+#include <string>
 #include <unordered_set>
 #include <utility>
 
 #include "UniqueWordsCounter/utils/scanning.h"
 #include "UniqueWordsCounter/utils/textFiles.h"
+#include "UniqueWordsCounter/utils/wordsSet.h"
 
-auto UniqueWordsCounter::Method::bufferScanning(const std::string &filename) -> size_t
+auto UniqueWordsCounter::Method::optimizedBaseline(const std::string &filename) -> size_t
 {
     auto file = Utils::TextFiles::getFile(filename);
 
-    auto uniqueWords = std::unordered_set<std::string>{};
+    auto uniqueWords = Utils::WordsSet{};
+    auto longWords   = std::unordered_set<std::string>{};
     auto lastWord    = std::string{};
 
     auto buffer = Utils::Scanning::Buffer{ 1ULL << 20 };
 
-    auto wordCallback = [&uniqueWords](const char *text, size_t len)
-    { uniqueWords.emplace(text, len); };
+    auto wordCallback = [&uniqueWords, &longWords](const char *text, size_t len)
+    {
+        if (uniqueWords.canEmplace(text, len)) [[likely]]
+            uniqueWords.emplace(text, len);
+        else
+            longWords.emplace(text, len);
+    };
 
     auto lastWordCallback = [&lastWord](std::string &&lastBufferWord)
     { lastWord = std::move(lastBufferWord); };
@@ -29,7 +37,7 @@ auto UniqueWordsCounter::Method::bufferScanning(const std::string &filename) -> 
     } while (buffer.size() > 0);
 
     if (!lastWord.empty())
-        uniqueWords.insert(std::move(lastWord));
+        wordCallback(lastWord.data(), lastWord.size());
 
     return uniqueWords.size();
 }

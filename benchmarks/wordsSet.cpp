@@ -9,8 +9,8 @@
 
 #include <benchmark/benchmark.h>
 
-#include "UniqueWordsCounter/utils/openAddressingSet.h"
 #include "UniqueWordsCounter/utils/textFiles.h"
+#include "UniqueWordsCounter/utils/wordsSet.h"
 
 namespace
 {
@@ -59,7 +59,12 @@ BENCHMARK_DEFINE_F(WordsFixture, BM_unordered_set_of_strings)(benchmark::State &
         auto uniqueWords = std::unordered_set<std::string>{};
 
         for (const auto &word : words)
+        {
+            if (!UniqueWordsCounter::Utils::WordsSet<>::canEmplace(word.data(),
+                                                                   word.size()))
+                continue;
             uniqueWords.emplace(word.data(), word.size());
+        }
 
         benchmark::DoNotOptimize(size = uniqueWords.size());
     }
@@ -73,10 +78,14 @@ BENCHMARK_DEFINE_F(WordsFixture, BM_open_address_set)(benchmark::State &state)
 
     for (auto _ : state)
     {
-        auto uniqueWords = UniqueWordsCounter::Utils::OpenAddressingSet{};
+        auto uniqueWords = UniqueWordsCounter::Utils::WordsSet{};
 
         for (const auto &word : words)
+        {
+            if (!uniqueWords.canEmplace(word.data(), word.size()))
+                continue;
             uniqueWords.emplace(word.data(), word.size());
+        }
 
         benchmark::DoNotOptimize(size = uniqueWords.size());
     }

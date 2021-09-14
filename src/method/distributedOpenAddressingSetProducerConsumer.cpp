@@ -10,8 +10,8 @@
 
 #include "UniqueWordsCounter/utils/hash.h"
 #include "UniqueWordsCounter/utils/itemManager.h"
-#include "UniqueWordsCounter/utils/openAddressingSet.h"
 #include "UniqueWordsCounter/utils/scanning.h"
+#include "UniqueWordsCounter/utils/wordsSet.h"
 
 auto UniqueWordsCounter::Method::distributedOpenAddressingSetProducerConsumer(
     const std::string &filename,
@@ -32,17 +32,17 @@ auto UniqueWordsCounter::Method::distributedOpenAddressingSetProducerConsumer(
     }();
 
     using Utils::ItemManager;
-    using Utils::OpenAddressingSet;
+    using Utils::WordsSet;
     using Utils::Scanning::ScanTask;
 
     auto scanTaskManager    = ItemManager<ScanTask<>>{};
-    auto producerSetManager = ItemManager<OpenAddressingSet<>>{ consumersNum };
+    auto producerSetManager = ItemManager<WordsSet<>>{ consumersNum };
 
     // TODO: refactor to anonymous function
     auto producer =
         [&scanTaskManager, &producerSetManager, &consumersNum, &bitsNumToConsider]()
     {
-        auto producerSets = std::vector<OpenAddressingSet<> *>{};
+        auto producerSets = std::vector<WordsSet<> *>{};
         for (size_t i{}; i < consumersNum; ++i)
             producerSets.push_back(producerSetManager.allocate(1ULL << 17));
 
@@ -88,7 +88,7 @@ auto UniqueWordsCounter::Method::distributedOpenAddressingSetProducerConsumer(
 
     auto consumer = [&producerSetManager](const size_t channelIndex, size_t &result)
     {
-        auto consumerSet = OpenAddressingSet{};
+        auto consumerSet = WordsSet{};
 
         while (true)
         {

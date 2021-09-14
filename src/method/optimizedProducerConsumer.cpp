@@ -11,18 +11,18 @@
 #include "tbb/concurrent_queue.h"
 
 #include "UniqueWordsCounter/utils/itemManager.h"
-#include "UniqueWordsCounter/utils/openAddressingSet.h"
 #include "UniqueWordsCounter/utils/scanning.h"
+#include "UniqueWordsCounter/utils/wordsSet.h"
 
 auto UniqueWordsCounter::Method::optimizedProducerConsumer(const std::string &filename,
                                                            size_t producersNum) -> size_t
 {
     using Utils::ItemManager;
-    using Utils::OpenAddressingSet;
+    using Utils::WordsSet;
     using Utils::Scanning::ScanTask;
 
     auto scanTaskManager    = ItemManager<ScanTask<>>{};
-    auto producerSetManager = ItemManager<OpenAddressingSet<>>{};
+    auto producerSetManager = ItemManager<WordsSet<>>{};
 
     // TODO: refactor to anonymous function
     auto producer = [&scanTaskManager, &producerSetManager]()
@@ -62,7 +62,7 @@ auto UniqueWordsCounter::Method::optimizedProducerConsumer(const std::string &fi
         }
     };
 
-    auto consumerSet = OpenAddressingSet{};
+    auto consumerSet = WordsSet{};
     auto consumer    = [&producerSetManager, &consumerSet]()
     {
         while (true)

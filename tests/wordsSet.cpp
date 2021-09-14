@@ -5,20 +5,20 @@
 #include <string>
 #include <unordered_set>
 
-#include "UniqueWordsCounter/utils/openAddressingSet.h"
 #include "UniqueWordsCounter/utils/textFiles.h"
+#include "UniqueWordsCounter/utils/wordsSet.h"
 
-TEST(OpenAddressingSet, Instantiation)
+TEST(WordsSet, Instantiation)
 {
-    auto s = UniqueWordsCounter::Utils::OpenAddressingSet{};
+    auto s = UniqueWordsCounter::Utils::WordsSet{};
     ASSERT_EQ(s.size(), 0);
 }
 
-TEST(OpenAddressingSet, BasicUsage)
+TEST(WordsSet, BasicUsage)
 {
     using namespace std::string_literals;
 
-    auto s = UniqueWordsCounter::Utils::OpenAddressingSet{};
+    auto s = UniqueWordsCounter::Utils::WordsSet{};
 
     s.emplace("a", 1);
     ASSERT_EQ(s.size(), 1);
@@ -35,90 +35,65 @@ TEST(OpenAddressingSet, BasicUsage)
     ASSERT_EQ(s.size(), 3);
     s.emplace("sample1", 7);
     ASSERT_EQ(s.size(), 3);
-
-    ASSERT_EQ(s.nativeSize(), s.size());
-
-    s.insert("a"s);
-    ASSERT_EQ(s.size(), 3);
-    s.insert("d"s);
-    ASSERT_EQ(s.size(), 4);
 }
 
-TEST(OpenAddressingSet, HeavyUsage)
+TEST(WordsSet, HeavyUsage)
 {
     using namespace UniqueWordsCounter::Utils::TextFiles;
 
-    auto stlSet            = std::unordered_set<std::string>{};
-    auto openAddressingSet = UniqueWordsCounter::Utils::OpenAddressingSet{};
+    auto stlSet   = std::unordered_set<std::string>{};
+    auto wordsSet = UniqueWordsCounter::Utils::WordsSet{};
 
     for (const auto &word :
          getWords({ kSyntheticShortWords100MB, kSyntheticLongWords100MB, kEnglishWords },
                   /*shuffle*/ true))
     {
-        ASSERT_EQ(stlSet.size(), openAddressingSet.size());
+        ASSERT_EQ(stlSet.size(), wordsSet.size());
+
+        if (!wordsSet.canEmplace(word.data(), word.size()))
+            continue;
 
         stlSet.insert(word);
-        openAddressingSet.emplace(word.data(), word.size());
+        wordsSet.emplace(word.data(), word.size());
     }
 }
 
-TEST(OpenAddressingSet, ConsumeAndClearBasic)
+TEST(WordsSet, ConsumeAndClearBasic)
 {
-    using namespace std::string_literals;
     using namespace UniqueWordsCounter::Utils;
 
-    auto lhs = OpenAddressingSet{};
-    auto rhs = OpenAddressingSet{};
+    auto lhs = WordsSet{};
+    auto rhs = WordsSet{};
 
-    lhs.insert("a"s);
-    lhs.insert("b"s);
+    lhs.emplace("a", 1);
+    lhs.emplace("b", 1);
     ASSERT_EQ(lhs.size(), 2);
 
-    rhs.insert("b"s);
-    rhs.insert("c"s);
+    rhs.emplace("b", 1);
+    rhs.emplace("c", 1);
     ASSERT_EQ(rhs.size(), 2);
 
     lhs.consumeAndClear(rhs);
     ASSERT_EQ(lhs.size(), 3);
     ASSERT_EQ(rhs.size(), 0);
 
-    for (const auto &word : { "a"s, "b"s, "c"s })
+    for (const auto word : { "a", "b", "c" })
     {
-        lhs.insert(std::string{ word });
+        lhs.emplace(word, 1);
         ASSERT_EQ(lhs.size(), 3);
     }
-    lhs.insert("d"s);
+    lhs.emplace("d", 1);
     ASSERT_EQ(lhs.size(), 4);
 
-    rhs.insert("a"s);
+    rhs.emplace("a", 1);
     ASSERT_EQ(rhs.size(), 1);
-    rhs.insert("b"s);
+    rhs.emplace("b", 1);
     ASSERT_EQ(rhs.size(), 2);
-    rhs.insert("c"s);
+    rhs.emplace("c", 1);
     ASSERT_EQ(rhs.size(), 3);
-
-    lhs.clear();
-    rhs.clear();
-    ASSERT_EQ(lhs.size(), 0);
-    ASSERT_EQ(rhs.size(), 0);
-
-    rhs.insert("abc"s);
-    rhs.insert("def"s);
-    rhs.insert("ghi"s);
-    ASSERT_EQ(rhs.size(), 3);
-
-    lhs.consumeAndClear(rhs);
-    ASSERT_EQ(lhs.size(), 3);
-    ASSERT_EQ(rhs.size(), 0);
-    lhs.insert("ghi"s);
-    ASSERT_EQ(lhs.size(), 3);
-    rhs.insert("ghi"s);
-    ASSERT_EQ(rhs.size(), 1);
-    rhs.insert("jkl"s);
-    ASSERT_EQ(rhs.size(), 2);
 }
 
-TEST(OpenAddressingSet, ConsumeAndClearHeavyUsage)
+TEST(WordsSet, ConsumeAndClearHeavyUsage)
 {
     using namespace UniqueWordsCounter::Utils;
     using namespace UniqueWordsCounter::Utils::TextFiles;
@@ -126,8 +101,8 @@ TEST(OpenAddressingSet, ConsumeAndClearHeavyUsage)
     auto stdSource = std::unordered_set<std::string>{};
     auto stdTarget = std::unordered_set<std::string>{};
 
-    auto source = OpenAddressingSet{};
-    auto target = OpenAddressingSet{};
+    auto source = WordsSet{};
+    auto target = WordsSet{};
 
     ASSERT_EQ(stdSource.size(), 0);
     ASSERT_EQ(stdTarget.size(), 0);
@@ -153,6 +128,9 @@ TEST(OpenAddressingSet, ConsumeAndClearHeavyUsage)
 
         for (auto i = size_t{}; i < chunkSize; ++i, ++l)
         {
+            if (!source.canEmplace(l->data(), l->size()))
+                continue;
+
             stdSource.insert(*l);
             source.emplace(l->data(), l->size());
 

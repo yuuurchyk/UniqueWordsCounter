@@ -23,14 +23,16 @@ add_library(
     lib_${PROJECT_NAME}
     STATIC
     include/UniqueWordsCounter/methods.h
-    include/UniqueWordsCounter/utils/openAddressingSet.h
-    include/UniqueWordsCounter/utils/openAddressingSetImpl.h
+    include/UniqueWordsCounter/utils/wordsSet.h
+    include/UniqueWordsCounter/utils/wordsSetImpl.h
+    include/UniqueWordsCounter/utils/wordBucket.h
     include/UniqueWordsCounter/utils/hash.h
     include/UniqueWordsCounter/utils/textFiles.h
     include/UniqueWordsCounter/utils/scanningImpl.h
     include/UniqueWordsCounter/utils/itemManager.h
     src/method/baseline.cpp
     src/method/bufferScanning.cpp
+    src/method/optimizedBaseline.cpp
     src/method/producerConsumer.cpp
     src/method/optimizedProducerConsumer.cpp
     src/method/concurrentSetProducerConsumer.cpp
@@ -76,7 +78,7 @@ if(WithBenchmarks)
         list(APPEND BenchmarkTargets ${executableName})
     endforeach()
 
-    foreach(utilityBenchmarkName openAddressingSet hash)
+    foreach(utilityBenchmarkName wordsSet hash)
         set(executableName benchmark_${utilityBenchmarkName})
 
         add_executable(
@@ -109,7 +111,7 @@ option(WithTests "Example of programs related to data structures and algorithms 
 if(WithTests)
     include(googleTest)
 
-    foreach(testName hash unorderedSetBuckets openAddressingSet methodsCorrectness)
+    foreach(testName hash unorderedSetBuckets wordsSet methodsCorrectness)
         set(targetName test_${testName})
 
         add_executable(

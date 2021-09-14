@@ -13,9 +13,9 @@
 #include "oneapi/tbb/scalable_allocator.h"
 
 #include "UniqueWordsCounter/utils/hash.h"
-#include "UniqueWordsCounter/utils/openAddressingSet.h"
 #include "UniqueWordsCounter/utils/scanning.h"
 #include "UniqueWordsCounter/utils/textFiles.h"
+#include "UniqueWordsCounter/utils/wordsSet.h"
 
 auto UniqueWordsCounter::Method::distributedSetMemoryPool(const std::string &filename,
                                                           size_t consumersNum) -> size_t
@@ -25,154 +25,156 @@ auto UniqueWordsCounter::Method::distributedSetMemoryPool(const std::string &fil
     if ((consumersNum & (consumersNum - 1)) != 0)
         throw std::runtime_error{ "Number of consumer threads should be a power of 2" };
 
-    const auto bitsNumToConsider = [&consumersNum]()
-    {
-        auto result = size_t{};
-        for (uint64_t consNum{ consumersNum >> 1 }; consNum > 0; consNum >>= 1)
-            ++result;
-        return result;
-    }();
+    return 0;
 
-    auto pool = tbb::memory_pool<tbb::scalable_allocator<std::byte>>{};
+    // const auto bitsNumToConsider = [&consumersNum]()
+    // {
+    //     auto result = size_t{};
+    //     for (uint64_t consNum{ consumersNum >> 1 }; consNum > 0; consNum >>= 1)
+    //         ++result;
+    //     return result;
+    // }();
 
-    using byte_allocator_type = tbb::memory_pool_allocator<std::byte>;
-    using task_type           = Utils::Scanning::ScanTask<byte_allocator_type>;
-    using set_type            = Utils::OpenAddressingSet<byte_allocator_type>;
+    // auto pool = tbb::memory_pool<tbb::scalable_allocator<std::byte>>{};
 
-    auto pendingTasks = tbb::concurrent_bounded_queue<task_type *>{};
+    // using byte_allocator_type = tbb::memory_pool_allocator<std::byte>;
+    // using task_type           = Utils::Scanning::ScanTask<byte_allocator_type>;
+    // using set_type            = Utils::WordsSet<byte_allocator_type>;
 
-    auto pendingSets =
-        std::vector<std::unique_ptr<tbb::concurrent_bounded_queue<set_type *>>>{};
-    pendingSets.reserve(consumersNum);
-    for (auto i = size_t{}; i < consumersNum; ++i)
-        pendingSets.emplace_back(new tbb::concurrent_bounded_queue<set_type *>{});
+    // auto pendingTasks = tbb::concurrent_bounded_queue<task_type *>{};
 
-    auto scanner = [&filename, &pool, &pendingTasks]()
-    {
-        auto byteAllocator = byte_allocator_type{ pool };
+    // auto pendingSets =
+    //     std::vector<std::unique_ptr<tbb::concurrent_bounded_queue<set_type *>>>{};
+    // pendingSets.reserve(consumersNum);
+    // for (auto i = size_t{}; i < consumersNum; ++i)
+    //     pendingSets.emplace_back(new tbb::concurrent_bounded_queue<set_type *>{});
 
-        auto file = Utils::TextFiles::getFile(filename);
+    // auto scanner = [&filename, &pool, &pendingTasks]()
+    // {
+    //     auto byteAllocator = byte_allocator_type{ pool };
 
-        auto firstTask = [&byteAllocator, &file]()
-        {
-            auto firstTask = new task_type{ byteAllocator };
+    //     auto file = Utils::TextFiles::getFile(filename);
 
-            auto lastWordBeforeFirstTask = std::promise<std::string>{};
-            lastWordBeforeFirstTask.set_value({});
+    //     auto firstTask = [&byteAllocator, &file]()
+    //     {
+    //         auto firstTask = new task_type{ byteAllocator };
 
-            firstTask->buffer.read(file);
-            firstTask->lastWordFromPreviousTask = lastWordBeforeFirstTask.get_future();
+    //         auto lastWordBeforeFirstTask = std::promise<std::string>{};
+    //         lastWordBeforeFirstTask.set_value({});
 
-            return firstTask;
-        }();
+    //         firstTask->buffer.read(file);
+    //         firstTask->lastWordFromPreviousTask = lastWordBeforeFirstTask.get_future();
 
-        auto previousTask = firstTask;
-        while (previousTask->buffer.size() > 0)
-        {
-            auto currentTask = new task_type{ byteAllocator };
+    //         return firstTask;
+    //     }();
 
-            currentTask->buffer.read(file);
-            currentTask->lastWordFromPreviousTask =
-                previousTask->lastWordFromCurrentTask.get_future();
+    //     auto previousTask = firstTask;
+    //     while (previousTask->buffer.size() > 0)
+    //     {
+    //         auto currentTask = new task_type{ byteAllocator };
 
-            pendingTasks.push(previousTask);
-            previousTask = currentTask;
-        }
+    //         currentTask->buffer.read(file);
+    //         currentTask->lastWordFromPreviousTask =
+    //             previousTask->lastWordFromCurrentTask.get_future();
 
-        pendingTasks.push(previousTask);
-        pendingTasks.push(nullptr);
-    };
+    //         pendingTasks.push(previousTask);
+    //         previousTask = currentTask;
+    //     }
 
-    auto producer =
-        [&pool, &pendingTasks, &consumersNum, &bitsNumToConsider, &pendingSets]()
-    {
-        auto byteAllocator = byte_allocator_type{ pool };
+    //     pendingTasks.push(previousTask);
+    //     pendingTasks.push(nullptr);
+    // };
 
-        auto producerSets = std::vector<set_type *>{};
-        producerSets.reserve(consumersNum);
-        for (auto i = size_t{}; i < consumersNum; ++i)
-            producerSets.push_back(new set_type{ 1ULL << 17, byteAllocator });
+    // auto producer =
+    //     [&pool, &pendingTasks, &consumersNum, &bitsNumToConsider, &pendingSets]()
+    // {
+    //     auto byteAllocator = byte_allocator_type{ pool };
 
-        while (true)
-        {
-            task_type *currentTask{};
-            while (!pendingTasks.pop(currentTask)) {}
-            if (currentTask == nullptr)
-            {
-                pendingTasks.push(nullptr);
-                for (auto i = size_t{}; i < consumersNum; ++i)
-                    pendingSets[i]->push(producerSets[i]);
-                return;
-            }
+    //     auto producerSets = std::vector<set_type *>{};
+    //     producerSets.reserve(consumersNum);
+    //     for (auto i = size_t{}; i < consumersNum; ++i)
+    //         producerSets.push_back(new set_type{ 1ULL << 17, byteAllocator });
 
-            auto wordCallback =
-                [&producerSets, &bitsNumToConsider, &pendingSets, &byteAllocator](
-                    const char *text, size_t len)
-            {
-                const uint64_t hash{ Utils::Hash::murmur64(text, len) };
-                const uint64_t channelIndex = (hash >> (64 - bitsNumToConsider));
+    //     while (true)
+    //     {
+    //         task_type *currentTask{};
+    //         while (!pendingTasks.pop(currentTask)) {}
+    //         if (currentTask == nullptr)
+    //         {
+    //             pendingTasks.push(nullptr);
+    //             for (auto i = size_t{}; i < consumersNum; ++i)
+    //                 pendingSets[i]->push(producerSets[i]);
+    //             return;
+    //         }
 
-                producerSets[channelIndex]->emplaceWithHint(hash, text, len);
-                if (producerSets[channelIndex]->elementsUntilRehash() <= 1ULL)
-                {
-                    pendingSets[channelIndex]->push(producerSets[channelIndex]);
+    //         auto wordCallback =
+    //             [&producerSets, &bitsNumToConsider, &pendingSets, &byteAllocator](
+    //                 const char *text, size_t len)
+    //         {
+    //             const uint64_t hash{ Utils::Hash::murmur64(text, len) };
+    //             const uint64_t channelIndex = (hash >> (64 - bitsNumToConsider));
 
-                    producerSets[channelIndex] =
-                        new set_type{ 1ULL << 17, byteAllocator };
-                }
-            };
-            auto lastWordCallback = [&currentTask](std::string &&lastWord)
-            { currentTask->lastWordFromCurrentTask.set_value(std::move(lastWord)); };
+    //             producerSets[channelIndex]->emplaceWithHint(hash, text, len);
+    //             if (producerSets[channelIndex]->elementsUntilRehash() <= 1ULL)
+    //             {
+    //                 pendingSets[channelIndex]->push(producerSets[channelIndex]);
 
-            Utils::Scanning::bufferScanning(currentTask->buffer,
-                                            currentTask->lastWordFromPreviousTask.get(),
-                                            wordCallback,
-                                            lastWordCallback);
+    //                 producerSets[channelIndex] =
+    //                     new set_type{ 1ULL << 17, byteAllocator };
+    //             }
+    //         };
+    //         auto lastWordCallback = [&currentTask](std::string &&lastWord)
+    //         { currentTask->lastWordFromCurrentTask.set_value(std::move(lastWord)); };
 
-            delete currentTask;
-        }
-    };
+    //         Utils::Scanning::bufferScanning(currentTask->buffer,
+    //                                         currentTask->lastWordFromPreviousTask.get(),
+    //                                         wordCallback,
+    //                                         lastWordCallback);
 
-    auto consumer = [&pool, &pendingSets](size_t channelIndex, size_t &result)
-    {
-        auto byteAllocator = byte_allocator_type{ pool };
+    //         delete currentTask;
+    //     }
+    // };
 
-        auto consumerSet = set_type{ 1ULL << 17, byteAllocator };
+    // auto consumer = [&pool, &pendingSets](size_t channelIndex, size_t &result)
+    // {
+    //     auto byteAllocator = byte_allocator_type{ pool };
 
-        while (true)
-        {
-            set_type *producerSet{};
-            while (!pendingSets[channelIndex]->pop(producerSet)) {}
+    //     auto consumerSet = set_type{ 1ULL << 17, byteAllocator };
 
-            if (producerSet == nullptr)
-            {
-                pendingSets[channelIndex]->push(nullptr);
-                break;
-            }
+    //     while (true)
+    //     {
+    //         set_type *producerSet{};
+    //         while (!pendingSets[channelIndex]->pop(producerSet)) {}
 
-            consumerSet.consumeAndClear(*producerSet);
-            delete producerSet;
-        }
+    //         if (producerSet == nullptr)
+    //         {
+    //             pendingSets[channelIndex]->push(nullptr);
+    //             break;
+    //         }
 
-        result = consumerSet.size();
-    };
+    //         consumerSet.consumeAndClear(*producerSet);
+    //         delete producerSet;
+    //     }
 
-    auto producerThread = std::thread{ producer };
+    //     result = consumerSet.size();
+    // };
 
-    auto consumersResults = std::vector<size_t>(consumersNum, {});
-    auto consumerThreads  = std::vector<std::thread>();
-    consumerThreads.reserve(consumersNum);
-    for (auto i = size_t{}; i < consumersNum; ++i)
-        consumerThreads.emplace_back(consumer, i, std::ref(consumersResults.at(i)));
+    // auto producerThread = std::thread{ producer };
 
-    scanner();
+    // auto consumersResults = std::vector<size_t>(consumersNum, {});
+    // auto consumerThreads  = std::vector<std::thread>();
+    // consumerThreads.reserve(consumersNum);
+    // for (auto i = size_t{}; i < consumersNum; ++i)
+    //     consumerThreads.emplace_back(consumer, i, std::ref(consumersResults.at(i)));
 
-    producerThread.join();
-    for (auto &item : pendingSets)
-        item->push(nullptr);
+    // scanner();
 
-    for (auto &consumerThread : consumerThreads)
-        consumerThread.join();
+    // producerThread.join();
+    // for (auto &item : pendingSets)
+    //     item->push(nullptr);
 
-    return std::accumulate(consumersResults.begin(), consumersResults.end(), size_t{});
+    // for (auto &consumerThread : consumerThreads)
+    //     consumerThread.join();
+
+    // return std::accumulate(consumersResults.begin(), consumersResults.end(), size_t{});
 }
