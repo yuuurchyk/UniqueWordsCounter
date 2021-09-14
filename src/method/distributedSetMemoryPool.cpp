@@ -117,7 +117,8 @@ auto UniqueWordsCounter::Method::distributedSetMemoryPool(const std::string &fil
                 {
                     pendingSets[channelIndex]->push(producerSets[channelIndex]);
 
-                    producerSets[channelIndex] = new set_type{ byteAllocator };
+                    producerSets[channelIndex] =
+                        new set_type{ 1ULL << 17, byteAllocator };
                 }
             };
             auto lastWordCallback = [&currentTask](std::string &&lastWord)
