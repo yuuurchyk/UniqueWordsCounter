@@ -36,37 +36,26 @@ auto UniqueWordsCounter::Method::distributedSetMemoryPool(const std::string &fil
     auto pool = tbb::memory_pool<tbb::scalable_allocator<std::byte>>{};
 
     using byte_allocator_type = tbb::memory_pool_allocator<std::byte>;
-    using scan_task_type      = Utils::Scanning::ScanTask<byte_allocator_type>;
+    using task_type           = Utils::Scanning::ScanTask<byte_allocator_type>;
     using set_type            = Utils::OpenAddressingSet<byte_allocator_type>;
 
-    auto pendingTasks =
-        tbb::concurrent_bounded_queue<scan_task_type *,
-                                      tbb::memory_pool_allocator<scan_task_type *>>{
-            tbb::memory_pool_allocator<scan_task_type *>{ pool }
-        };
+    auto pendingTasks = tbb::concurrent_bounded_queue<task_type *>{};
 
-    auto pendingSets = std::vector<std::unique_ptr<
-        tbb::concurrent_bounded_queue<set_type *,
-                                      tbb::memory_pool_allocator<set_type *>>>>{};
+    auto pendingSets =
+        std::vector<std::unique_ptr<tbb::concurrent_bounded_queue<set_type *>>>{};
     pendingSets.reserve(consumersNum);
     for (auto i = size_t{}; i < consumersNum; ++i)
-        pendingSets.push_back(
-            std::make_unique<
-                tbb::concurrent_bounded_queue<set_type *,
-                                              tbb::memory_pool_allocator<set_type *>>>(
-                tbb::memory_pool_allocator<set_type *>{ pool }));
+        pendingSets.emplace_back(new tbb::concurrent_bounded_queue<set_type *>{});
 
     auto scanner = [&filename, &pool, &pendingTasks]()
     {
-        auto scanTaskAllocator = tbb::memory_pool_allocator<scan_task_type>{ pool };
-        auto byteAllocator     = byte_allocator_type{ pool };
+        auto byteAllocator = byte_allocator_type{ pool };
 
         auto file = Utils::TextFiles::getFile(filename);
 
-        auto firstTask = [&scanTaskAllocator, &byteAllocator, &file]()
+        auto firstTask = [&byteAllocator, &file]()
         {
-            auto firstTask = scanTaskAllocator.allocate(1);
-            std::construct_at(firstTask, byteAllocator);
+            auto firstTask = new task_type{ byteAllocator };
 
             auto lastWordBeforeFirstTask = std::promise<std::string>{};
             lastWordBeforeFirstTask.set_value({});
@@ -80,8 +69,7 @@ auto UniqueWordsCounter::Method::distributedSetMemoryPool(const std::string &fil
         auto previousTask = firstTask;
         while (previousTask->buffer.size() > 0)
         {
-            auto currentTask = scanTaskAllocator.allocate(1);
-            std::construct_at(currentTask, byteAllocator);
+            auto currentTask = new task_type{ byteAllocator };
 
             currentTask->buffer.read(file);
             currentTask->lastWordFromPreviousTask =
@@ -98,22 +86,16 @@ auto UniqueWordsCounter::Method::distributedSetMemoryPool(const std::string &fil
     auto producer =
         [&pool, &pendingTasks, &consumersNum, &bitsNumToConsider, &pendingSets]()
     {
-        auto setAllocator  = tbb::memory_pool_allocator<set_type>{ pool };
         auto byteAllocator = byte_allocator_type{ pool };
-        auto taskAllocator = tbb::memory_pool_allocator<scan_task_type>{ pool };
 
         auto producerSets = std::vector<set_type *>{};
         producerSets.reserve(consumersNum);
         for (auto i = size_t{}; i < consumersNum; ++i)
-        {
-            auto item = setAllocator.allocate(1);
-            std::construct_at(item, 1ULL << 17, byteAllocator);
-            producerSets.push_back(item);
-        }
+            producerSets.push_back(new set_type{ 1ULL << 17, byteAllocator });
 
         while (true)
         {
-            scan_task_type *currentTask{};
+            task_type *currentTask{};
             while (!pendingTasks.pop(currentTask)) {}
             if (currentTask == nullptr)
             {
@@ -123,11 +105,9 @@ auto UniqueWordsCounter::Method::distributedSetMemoryPool(const std::string &fil
                 return;
             }
 
-            auto wordCallback = [&producerSets,
-                                 &bitsNumToConsider,
-                                 &pendingSets,
-                                 &setAllocator,
-                                 &byteAllocator](const char *text, size_t len)
+            auto wordCallback =
+                [&producerSets, &bitsNumToConsider, &pendingSets, &byteAllocator](
+                    const char *text, size_t len)
             {
                 const uint64_t hash{ Utils::Hash::murmur64(text, len) };
                 const uint64_t channelIndex = (hash >> (64 - bitsNumToConsider));
@@ -137,9 +117,7 @@ auto UniqueWordsCounter::Method::distributedSetMemoryPool(const std::string &fil
                 {
                     pendingSets[channelIndex]->push(producerSets[channelIndex]);
 
-                    producerSets[channelIndex] = setAllocator.allocate(1);
-                    std::construct_at(
-                        producerSets[channelIndex], 1ULL << 17, byteAllocator);
+                    producerSets[channelIndex] = new set_type{ byteAllocator };
                 }
             };
             auto lastWordCallback = [&currentTask](std::string &&lastWord)
@@ -150,18 +128,15 @@ auto UniqueWordsCounter::Method::distributedSetMemoryPool(const std::string &fil
                                             wordCallback,
                                             lastWordCallback);
 
-            std::destroy_at(currentTask);
-            taskAllocator.deallocate(currentTask, 1);
+            delete currentTask;
         }
     };
 
     auto consumer = [&pool, &pendingSets](size_t channelIndex, size_t &result)
     {
-        auto setAllocator  = tbb::memory_pool_allocator<set_type>{ pool };
         auto byteAllocator = byte_allocator_type{ pool };
 
-        auto consumerSet = setAllocator.allocate(1);
-        std::construct_at(consumerSet, 1ULL << 17, byteAllocator);
+        auto consumerSet = set_type{ 1ULL << 17, byteAllocator };
 
         while (true)
         {
@@ -174,15 +149,11 @@ auto UniqueWordsCounter::Method::distributedSetMemoryPool(const std::string &fil
                 break;
             }
 
-            consumerSet->consumeAndClear(*producerSet);
-
-            std::destroy_at(producerSet);
-            setAllocator.deallocate(producerSet, 1);
+            consumerSet.consumeAndClear(*producerSet);
+            delete producerSet;
         }
 
-        result = consumerSet->size();
-        std::destroy_at(consumerSet);
-        setAllocator.deallocate(consumerSet, 1);
+        result = consumerSet.size();
     };
 
     auto producerThread = std::thread{ producer };
