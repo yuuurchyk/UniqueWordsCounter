@@ -2,26 +2,23 @@
 
 #include <filesystem>
 #include <random>
-#include <sstream>
 #include <stdexcept>
 #include <utility>
 
 namespace
 {
-void checkFilenameValid(const std::string &filename)
+auto checkFilenameValid(const std::string &filename) -> void
 {
-    if (!std::filesystem::is_regular_file(filename))
-    {
-        auto errorMessage = std::stringstream{};
-        errorMessage << "File " << filename << " does not point to a regular file";
+    using namespace std::string_literals;
 
-        throw std::runtime_error{ errorMessage.str() };
-    }
+    if (!std::filesystem::is_regular_file(filename))
+        throw std::runtime_error{ "File "s + filename +
+                                  " does not point to a regular file"s };
 }
 
-}    // namespace
+const std::string kDataFolder{ DATA_FOLDER };
 
-const std::string UniqueWordsCounter::Utils::TextFiles::kDataFolder{ DATA_FOLDER };
+}    // namespace
 
 const std::string UniqueWordsCounter::Utils::TextFiles::kEmpty{ kDataFolder +
                                                                 "/empty.txt" };
@@ -68,56 +65,16 @@ const std::initializer_list<std::string> UniqueWordsCounter::Utils::TextFiles::k
 auto UniqueWordsCounter::Utils::TextFiles::getFile(const std::string &filename)
     -> std::ifstream
 {
+    using namespace std::string_literals;
+
     checkFilenameValid(filename);
 
     auto file = std::ifstream{ filename };
 
     if (!file.is_open())
-    {
-        auto errorMessage = std::stringstream{};
-        errorMessage << "Cannot open file: " << filename;
-        throw std::runtime_error{ errorMessage.str() };
-    }
+        throw std::runtime_error{ "Cannot open file: "s + filename };
 
     return file;
-}
-
-auto UniqueWordsCounter::Utils::TextFiles::getWords(
-    std::initializer_list<std::string> filenames,
-    bool                               shuffle) -> std::vector<std::string>
-{
-    auto words = std::vector<std::string>{};
-
-    for (const auto &filename : filenames)
-    {
-        auto file = getFile(filename.c_str());
-        auto word = std::string{};
-
-        while (file >> word)
-            words.push_back(std::move(word));
-    }
-
-    if (shuffle)
-        std::shuffle(words.begin(), words.end(), std::mt19937{ 47 });
-
-    return words;
-}
-
-auto UniqueWordsCounter::Utils::TextFiles::getUniqueWords(
-    std::initializer_list<std::string> filenames) -> std::unordered_set<std::string>
-{
-    auto uniqueWords = std::unordered_set<std::string>{};
-
-    for (const auto &filename : filenames)
-    {
-        auto file = getFile(filename.c_str());
-        auto word = std::string{};
-
-        while (file >> word)
-            uniqueWords.insert(std::move(word));
-    }
-
-    return uniqueWords;
 }
 
 UniqueWordsCounter::Utils::TextFiles::WordsGenerator::WordsGenerator(
@@ -141,7 +98,6 @@ void UniqueWordsCounter::Utils::TextFiles::WordsGenerator::advance()
     if (_currentFile >> _word)
     {
         ++_wordCounter;
-        return;
     }
     else
     {
@@ -150,40 +106,38 @@ void UniqueWordsCounter::Utils::TextFiles::WordsGenerator::advance()
             _currentFile = getFile(_currentFileName->c_str());
         else
             _currentFile.close();
-        return advance();
+        advance();
     }
 }
 
 UniqueWordsCounter::Utils::TextFiles::WordsGenerator::iterator::iterator(
-    WordsGenerator *instance)
+    WordsGenerator &instance)
+    : _instance{ instance },
+      _word{ std::move(_instance._word) },
+      _wordCounter{ _instance._wordCounter }
+{
+}
+
+UniqueWordsCounter::Utils::TextFiles::WordsGenerator::iterator::iterator(
+    WordsGenerator &instance,
+    std::nullptr_t)
     : _instance{ instance }
 {
-    if (_instance != nullptr)
-    {
-        _word        = std::move(instance->_word);
-        _wordCounter = instance->_wordCounter;
-    }
 }
 
 bool UniqueWordsCounter::Utils::TextFiles::WordsGenerator::iterator::operator==(
     const iterator &rhs) const
 {
-    if (_word.empty() && rhs._word.empty())
-        return true;
-
-    return _wordCounter == rhs._wordCounter;
+    return _wordCounter == rhs._wordCounter && ((&_instance) == (&rhs._instance));
 }
 
 auto UniqueWordsCounter::Utils::TextFiles::WordsGenerator::iterator::operator++()
     -> iterator &
 {
-    if (_instance != nullptr)
-    {
-        _instance->advance();
+    _instance.advance();
 
-        _word        = std::move(_instance->_word);
-        _wordCounter = _instance->_wordCounter;
-    }
+    _word        = std::move(_instance._word);
+    _wordCounter = _word.empty() ? 0ULL : _instance._wordCounter;
 
     return *this;
 }
@@ -194,14 +148,4 @@ auto UniqueWordsCounter::Utils::TextFiles::WordsGenerator::iterator::operator++(
     auto self = (*this);
     ++(*this);
     return self;
-}
-
-auto UniqueWordsCounter::Utils::TextFiles::WordsGenerator::begin() -> iterator
-{
-    return iterator{ this };
-}
-
-auto UniqueWordsCounter::Utils::TextFiles::WordsGenerator::end() -> iterator
-{
-    return iterator{};
 }

@@ -5,13 +5,11 @@
 #include <initializer_list>
 #include <iterator>
 #include <string>
-#include <unordered_set>
 #include <vector>
 
 namespace UniqueWordsCounter::Utils::TextFiles
 {
-extern const std::string kDataFolder;
-
+// TODO: refactor to use std::filesystem::path?
 extern const std::string kEmpty;
 extern const std::string kSample;
 
@@ -30,12 +28,6 @@ extern const std::initializer_list<std::string> kAllFiles;
 
 auto getFile(const std::string &filename) -> std::ifstream;
 
-auto getWords(std::initializer_list<std::string> filenames, bool shuffle = false)
-    -> std::vector<std::string>;
-
-auto getUniqueWords(std::initializer_list<std::string> filenames)
-    -> std::unordered_set<std::string>;
-
 class WordsGenerator
 {
 public:
@@ -52,8 +44,8 @@ public:
     class iterator
     {
     public:
-        explicit iterator(WordsGenerator *);
-        iterator() : iterator(nullptr) {}
+        explicit iterator(WordsGenerator &);
+        explicit iterator(WordsGenerator &, std::nullptr_t);
 
         using iterator_category = std::input_iterator_tag;
         using value_type        = const std::string;
@@ -70,14 +62,14 @@ public:
         iterator  operator++(int);
 
     private:
-        WordsGenerator *_instance{};
+        WordsGenerator &_instance;
 
-        std::string _word{};
+        std::string _word;
         size_t      _wordCounter{};
     };
 
-    iterator begin();
-    iterator end();
+    iterator begin() { return iterator{ *this }; }
+    iterator end() { return iterator{ *this, nullptr }; }
 
 private:
     void advance();

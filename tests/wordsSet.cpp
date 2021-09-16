@@ -44,9 +44,8 @@ TEST(WordsSet, HeavyUsage)
     auto stlSet   = std::unordered_set<std::string>{};
     auto wordsSet = UniqueWordsCounter::Utils::WordsSet{};
 
-    for (const auto &word :
-         getWords({ kSyntheticShortWords100MB, kSyntheticLongWords100MB, kEnglishWords },
-                  /*shuffle*/ true))
+    for (const auto &word : WordsGenerator{
+             kSyntheticShortWords100MB, kSyntheticLongWords100MB, kEnglishWords })
     {
         ASSERT_EQ(stlSet.size(), wordsSet.size());
 
@@ -109,30 +108,29 @@ TEST(WordsSet, ConsumeAndClearHeavyUsage)
     ASSERT_EQ(source.size(), 0);
     ASSERT_EQ(target.size(), 0);
 
-    auto rd  = std::random_device{};
     auto gen = std::mt19937{};
     gen.seed(47);
+    std::uniform_int_distribution<size_t> chunkSizeDistribution{ 1ULL, 1'000ULL };
 
-    constexpr auto                        kMaxChunkSize = size_t{ 1'000ULL };
-    std::uniform_int_distribution<size_t> chunkSizeDistribution{ 1ULL, kMaxChunkSize };
-
-    const auto words =
-        getWords({ kSyntheticShortWords100MB, kSyntheticLongWords100MB, kEnglishWords },
-                 /* shuffle */ true);
-
-    for (auto l = words.cbegin(); l != words.cend();)
+    auto generator = WordsGenerator{ kSyntheticShortWords100MB,
+                                     kSyntheticLongWords100MB,
+                                     kEnglishWords };
+    for (auto it = generator.begin(); it != generator.end();)
     {
-        const auto leftover = words.cend() - l;
-        const auto chunkSize =
-            std::min(static_cast<size_t>(leftover), chunkSizeDistribution(gen));
+        ASSERT_TRUE(stdSource.empty());
+        ASSERT_EQ(source.size(), 0ULL);
 
-        for (auto i = size_t{}; i < chunkSize; ++i, ++l)
+        for (auto chunkSize = chunkSizeDistribution(gen);
+             chunkSize > 0 && it != generator.end();
+             ++it)
         {
-            if (!source.canEmplace(l->data(), l->size()))
+            const auto &word = *it;
+
+            if (!source.canEmplace(word.data(), word.size()))
                 continue;
 
-            stdSource.insert(*l);
-            source.emplace(l->data(), l->size());
+            stdSource.insert(word);
+            source.emplace(word.data(), word.size());
 
             ASSERT_EQ(stdSource.size(), source.size());
         }
