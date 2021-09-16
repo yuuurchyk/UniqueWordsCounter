@@ -8,8 +8,6 @@
 
 #include "UniqueWordsCounter/utils/hash.h"
 
-namespace
-{
 using namespace UniqueWordsCounter::Utils::Hash;
 
 class HashFixture : public benchmark::Fixture
@@ -61,16 +59,14 @@ BENCHMARK_DEFINE_F(HashFixture, BM_Murmur64)(benchmark::State &state)
 BENCHMARK_DEFINE_F(HashFixture, BM_Polynomial32_trivial)(benchmark::State &state)
 {
     for (auto _ : state)
-        benchmark::DoNotOptimize(polynomial32_trivial(text, len));
+        benchmark::DoNotOptimize(polynomial32TrivialASCIILowercase(text, len));
 }
 
 BENCHMARK_DEFINE_F(HashFixture, BM_Polynomial32)(benchmark::State &state)
 {
     for (auto _ : state)
-        benchmark::DoNotOptimize(polynomial32(text, len));
+        benchmark::DoNotOptimize(polynomial32ASCIILowercase(text, len));
 }
-
-}    // namespace
 
 // TODO: should it be in anonymous namespace? (same for other benchmarks)
 BENCHMARK_REGISTER_F(HashFixture, BM_Murmur64)->RangeMultiplier(2)->Range(1, 64);

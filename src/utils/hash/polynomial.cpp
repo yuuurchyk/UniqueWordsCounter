@@ -2,17 +2,18 @@
 
 #include <array>
 #include <limits>
+#include <stdexcept>
 
 namespace
 {
 constexpr uint64_t kMod{ 4294967291ULL };
-constexpr uint64_t kP{ 29 };
+constexpr uint64_t kP{ 29ULL };
 
 static_assert(kMod <= std::numeric_limits<uint32_t>::max(),
               "Polynomial Hash: mod does not fit into uint32_t");
 
-constexpr std::array<uint64_t, 7> kPPows{ 1ULL % kMod,
-                                          kP % kMod,
+constexpr std::array<uint64_t, 7> kPPows{ 1ULL,
+                                          (kP) % kMod,
                                           (kP * kP) % kMod,
                                           (kP * kP * kP) % kMod,
                                           (kP * kP * kP * kP) % kMod,
@@ -21,14 +22,19 @@ constexpr std::array<uint64_t, 7> kPPows{ 1ULL % kMod,
 
 inline uint64_t characterCode(char character)
 {
-    // TODO: throw error if letter is not lowercase
-    return static_cast<uint64_t>(character - 'a' + 1);
+    const auto characterCode = static_cast<uint64_t>(character - 'a');
+    if (characterCode >= 26) [[unlikely]]
+        throw std::runtime_error{
+            "Polynomial hash is implemented for lowercase ascii letters only"
+        };
+    return characterCode + 1;
 }
 
 }    // namespace
 
-uint32_t UniqueWordsCounter::Utils::Hash::polynomial32_trivial(const char *text,
-                                                               size_t      len)
+uint32_t
+    UniqueWordsCounter::Utils::Hash::polynomial32TrivialASCIILowercase(const char *text,
+                                                                       size_t      len)
 {
     auto hash = uint64_t{};
 
@@ -41,7 +47,8 @@ uint32_t UniqueWordsCounter::Utils::Hash::polynomial32_trivial(const char *text,
     return static_cast<uint32_t>(hash);
 }
 
-uint32_t UniqueWordsCounter::Utils::Hash::polynomial32(const char *text, size_t len)
+uint32_t UniqueWordsCounter::Utils::Hash::polynomial32ASCIILowercase(const char *text,
+                                                                     size_t      len)
 {
     auto hash = uint64_t{};
 

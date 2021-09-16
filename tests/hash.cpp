@@ -90,8 +90,9 @@ TEST(HashCorrectness, OptimizedPolynomialHash)
 
     for (const auto &word : WordsGenerator{ kAllFiles })
     {
-        const auto &trivialValue   = polynomial32_trivial(word.data(), word.size());
-        const auto &optimizedValue = polynomial32(word.data(), word.size());
+        const auto &trivialValue =
+            polynomial32TrivialASCIILowercase(word.data(), word.size());
+        const auto &optimizedValue = polynomial32ASCIILowercase(word.data(), word.size());
 
         ASSERT_EQ(trivialValue, optimizedValue)
             << "Word " << word << ": "
@@ -115,7 +116,7 @@ TEST(HashUniqueness, CollisionsPresent_Polynomial32)
     using namespace UniqueWordsCounter::Utils::Hash;
 
     const auto &[numberOfAmbiguousHashValues, diagnosticMessage] =
-        getNumberOfAmbiguousHashValues(&polynomial32);
+        getNumberOfAmbiguousHashValues(&polynomial32ASCIILowercase);
 
     if (numberOfAmbiguousHashValues > 0)
         std::cout << diagnosticMessage << std::endl;
