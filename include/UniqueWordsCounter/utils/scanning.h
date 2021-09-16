@@ -11,18 +11,11 @@
 
 namespace UniqueWordsCounter::Utils::Scanning
 {
-template <typename Allocator = std::allocator<std::byte>>
+template <typename Allocator = std::allocator<char>>
 class Buffer
 {
 public:
     explicit Buffer(size_t capacity, const Allocator &allocator = Allocator{});
-
-    Buffer(const Buffer &) = delete;
-    Buffer &operator=(const Buffer &) = delete;
-
-    Buffer(Buffer &&) = default;
-    Buffer &operator=(Buffer &&) = default;
-
     ~Buffer();
 
     [[nodiscard]] inline size_t      size() const noexcept { return _size; }
@@ -31,35 +24,38 @@ public:
     void read(std::ifstream &);
 
 private:
-    size_t _capacity;
-    size_t _size{};
+    Buffer(const Buffer &) = delete;
+    Buffer &operator=(const Buffer &) = delete;
 
-    Allocator  _allocator;
-    size_t     _bytesAllocated;
-    std::byte *_memory;
+    Buffer(Buffer &&) = delete;
+    Buffer &operator=(Buffer &&) = delete;
 
-    char *_data;
+private:
+    const size_t _capacity;
+    size_t       _size{};
+
+    Allocator    _allocator;
+    const size_t _bufferCapacity;
+    char *const  _buffer;
+
+    char *const _data;
 };
 
-template <typename Allocator = std::allocator<std::byte>>
+template <typename Allocator = std::allocator<char>>
 void bufferScanning(const Buffer<Allocator> &,
                     std::string lastWordFromPreviousChunk,
                     const std::function<void(const char *, size_t)> &wordCallback,
                     const std::function<void(std::string &&)> &      lastWordCallback);
 
-template <typename Allocator = std::allocator<std::byte>>
+template <typename Allocator = std::allocator<char>>
 struct ScanTask
 {
-    ScanTask(const Allocator &allocator = Allocator{}) : buffer{ 1ULL << 20, allocator }
-    {
-    }
-
-    Buffer<Allocator>         buffer;
+    Buffer<Allocator>         buffer{ 1ULL << 20 };
     std::future<std::string>  lastWordFromPreviousTask{};
     std::promise<std::string> lastWordFromCurrentTask{};
 };
 
-template <typename Allocator = std::allocator<std::byte>>
+template <typename Allocator = std::allocator<char>>
 void scanner(const std::string &filename, ItemManager<ScanTask<Allocator>> &);
 
 }    // namespace UniqueWordsCounter::Utils::Scanning

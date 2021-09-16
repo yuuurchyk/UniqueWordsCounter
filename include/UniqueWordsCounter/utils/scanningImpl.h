@@ -11,15 +11,17 @@
 template <typename Allocator>
 UniqueWordsCounter::Utils::Scanning::Buffer<Allocator>::Buffer(size_t           capacity,
                                                                const Allocator &allocator)
-    : _capacity{ capacity }, _allocator{ allocator }
+    : _capacity{ capacity },
+      _allocator{ allocator },
+      _bufferCapacity{ _capacity + 6 },
+      _buffer{ _allocator.allocate(_bufferCapacity) },
+      _data{ _buffer + 3 }
 {
-    if (_capacity == 0)
+    if (_capacity == 0) [[unlikely]]
+    {
+        _allocator.deallocate(_buffer, _bufferCapacity);
         throw std::runtime_error{ "Buffer size should be positive, got 0" };
-
-    _bytesAllocated = sizeof(char) * (_capacity + 6);
-    _memory         = _allocator.allocate(_bytesAllocated);
-
-    _data = reinterpret_cast<char *>(_memory) + 3;
+    }
 
     _data[-3] = '\0';
     _data[-2] = 'a';
@@ -33,7 +35,7 @@ UniqueWordsCounter::Utils::Scanning::Buffer<Allocator>::Buffer(size_t           
 template <typename Allocator>
 UniqueWordsCounter::Utils::Scanning::Buffer<Allocator>::~Buffer()
 {
-    _allocator.deallocate(_memory, _bytesAllocated);
+    _allocator.deallocate(_buffer, _bufferCapacity);
 }
 
 template <typename Allocator>
