@@ -30,14 +30,13 @@ add_library(
     include/UniqueWordsCounter/utils/textFiles.h
     include/UniqueWordsCounter/utils/scanningImpl.h
     include/UniqueWordsCounter/utils/itemManager.h
+    include/UniqueWordsCounter/utils/itemManagerImpl.h
     src/method/baseline.cpp
     src/method/bufferScanning.cpp
     src/method/optimizedBaseline.cpp
     src/method/producerConsumer.cpp
     src/method/optimizedProducerConsumer.cpp
     src/method/concurrentSetProducerConsumer.cpp
-    src/method/distributedOpenAddressingSetProducerConsumer.cpp
-    src/method/distributedSetMemoryPool.cpp
     src/utils/hash/murmur64.cpp
     src/utils/hash/polynomial.cpp
     src/utils/textFiles.cpp

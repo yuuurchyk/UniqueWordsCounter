@@ -137,7 +137,7 @@ void UniqueWordsCounter::Utils::Scanning::scanner(
 
     auto firstTask = [&manager, &file]()
     {
-        auto firstTask = manager.allocate();
+        auto firstTask = new ScanTask<Allocator>;
 
         auto lastWordBeforeFirstTask = std::promise<std::string>{};
         lastWordBeforeFirstTask.set_value({});
@@ -153,7 +153,9 @@ void UniqueWordsCounter::Utils::Scanning::scanner(
     {
         auto currentTask = manager.reuse();
         if (currentTask == nullptr)
-            currentTask = manager.allocate();
+        {
+            currentTask = new ScanTask<Allocator>;
+        }
         else
         {
             currentTask->lastWordFromCurrentTask  = {};
@@ -169,5 +171,5 @@ void UniqueWordsCounter::Utils::Scanning::scanner(
     }
 
     manager.setPending(*previousTask);
-    manager.unsafe_addDeathPillToAllChannels();
+    manager.addDeathPill();
 }
