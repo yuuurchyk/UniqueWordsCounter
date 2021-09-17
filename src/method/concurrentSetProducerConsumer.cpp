@@ -8,7 +8,7 @@
 #include "UniqueWordsCounter/utils/itemManager.h"
 #include "UniqueWordsCounter/utils/scanning.h"
 
-auto UniqueWordsCounter::Method::concurrentSetProducerConsumer(
+auto UniqueWordsCounter::Method::Parallel::concurrentSetProducerConsumer(
     const std::string &filename,
     size_t             producersNum) -> size_t
 {

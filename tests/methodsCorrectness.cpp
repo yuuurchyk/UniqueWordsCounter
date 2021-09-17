@@ -17,7 +17,8 @@ size_t getBaselineResult(const std::string &filename)
     static auto results = std::unordered_map<std::string, size_t>{};
 
     if (!results.contains(filename))
-        results.insert({ filename, UniqueWordsCounter::Method::baseline(filename) });
+        results.insert(
+            { filename, UniqueWordsCounter::Method::Sequential::baseline(filename) });
 
     return results.at(filename);
 }
@@ -55,10 +56,11 @@ INSTANTIATE_TEST_SUITE_P(
         ::testing::ValuesIn({
             std::make_tuple("bufferScanning"s,
                             std::function<size_t(std::string)>{
-                                UniqueWordsCounter::Method::bufferScanning }),
-            std::make_tuple("optimizedBaseline"s,
-                            std::function<size_t(std::string)>{
-                                UniqueWordsCounter::Method::optimizedBaseline })
+                                UniqueWordsCounter::Method::Sequential::bufferScanning }),
+            std::make_tuple(
+                "optimizedBaseline"s,
+                std::function<size_t(std::string)>{
+                    UniqueWordsCounter::Method::Sequential::optimizedBaseline })
             // TODO: add other methods
         })),
     [](const ::testing::TestParamInfo<MethodsCorrectnessFixture::ParamType> &info)

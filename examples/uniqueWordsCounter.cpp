@@ -20,22 +20,6 @@ using namespace std::string_literals;
 
 namespace
 {
-// TODO: move strings in methods.h header
-const auto kBaseline          = "baseline"s;
-const auto kBufferScanning    = "bufferScanning"s;
-const auto kOptimizedBaseline = "optimizedBaseline"s;
-
-const auto kProducerConsumer              = "producerConsumer"s;
-const auto kOptimizedProducerConsumer     = "optimizedProducerConsumer"s;
-const auto kConcurrentSetProducerConsumer = "concurrentSetProducerConsumer"s;
-
-const auto kMethods = { kBaseline,
-                        kBufferScanning,
-                        kOptimizedBaseline,
-                        kProducerConsumer,
-                        kOptimizedProducerConsumer,
-                        kConcurrentSetProducerConsumer };
-
 auto join(const std::initializer_list<std::string> &args) -> std::string
 {
     static const auto separator = ", "s;
@@ -56,6 +40,10 @@ auto join(const std::initializer_list<std::string> &args) -> std::string
 
 auto main(int argc, char **argv) -> int
 {
+    using namespace UniqueWordsCounter::Method;
+    using namespace UniqueWordsCounter::Method::Sequential;
+    using namespace UniqueWordsCounter::Method::Parallel;
+
     auto program = argparse::ArgumentParser{ "uniqueWordsCounter" };
     program.add_description("Calculates number of unique words in the provided file");
 
@@ -75,12 +63,13 @@ auto main(int argc, char **argv) -> int
         .action(
             [](const std::string &method)
             {
-                if (std::find(kMethods.begin(), kMethods.end(), method) == kMethods.end())
+                if (std::find(kAllMethods.begin(), kAllMethods.end(), method) ==
+                    kAllMethods.end())
                     throw std::runtime_error{ "Invalid method: "s + method +
-                                              ". Allowed values: "s + join(kMethods) };
+                                              ". Allowed values: "s + join(kAllMethods) };
                 return method;
             })
-        .help("Method to use. Allowed values: "s + join(kMethods));
+        .help("Method to use. Allowed values: "s + join(kAllMethods));
 
     try
     {

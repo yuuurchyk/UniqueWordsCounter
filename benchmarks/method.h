@@ -48,12 +48,14 @@
     }
 // clang-format on
 
-REGISTER_BENCHMARK_FUNCTION(baseline, UniqueWordsCounter::Method::baseline)
-REGISTER_BENCHMARK_FUNCTION(customScanning, UniqueWordsCounter::Method::bufferScanning)
+REGISTER_BENCHMARK_FUNCTION(baseline, UniqueWordsCounter::Method::Sequential::baseline)
+REGISTER_BENCHMARK_FUNCTION(customScanning,
+                            UniqueWordsCounter::Method::Sequential::bufferScanning)
 REGISTER_BENCHMARK_FUNCTION(optimizedBaseline,
-                            UniqueWordsCounter::Method::optimizedBaseline)
+                            UniqueWordsCounter::Method::Sequential::optimizedBaseline)
 REGISTER_BENCHMARK_FUNCTION(producerConsumer,
-                            UniqueWordsCounter::Method::producerConsumer)
-REGISTER_BENCHMARK_FUNCTION(optimizedProducerConsumer,
-                            UniqueWordsCounter::Method::optimizedProducerConsumer)
+                            UniqueWordsCounter::Method::Parallel::producerConsumer)
+REGISTER_BENCHMARK_FUNCTION(
+    optimizedProducerConsumer,
+    UniqueWordsCounter::Method::Parallel::optimizedProducerConsumer)
 // TODO: add other methods

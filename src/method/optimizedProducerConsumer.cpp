@@ -14,8 +14,9 @@
 #include "UniqueWordsCounter/utils/scanning.h"
 #include "UniqueWordsCounter/utils/wordsSet.h"
 
-auto UniqueWordsCounter::Method::optimizedProducerConsumer(const std::string &filename,
-                                                           size_t producersNum) -> size_t
+auto UniqueWordsCounter::Method::Parallel::optimizedProducerConsumer(
+    const std::string &filename,
+    size_t             producersNum) -> size_t
 {
     using Utils::ItemManager;
     using Utils::WordsSet;

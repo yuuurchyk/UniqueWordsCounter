@@ -8,7 +8,8 @@
 #include "UniqueWordsCounter/utils/textFiles.h"
 #include "UniqueWordsCounter/utils/wordsSet.h"
 
-auto UniqueWordsCounter::Method::optimizedBaseline(const std::string &filename) -> size_t
+auto UniqueWordsCounter::Method::Sequential::optimizedBaseline(
+    const std::string &filename) -> size_t
 {
     auto file = Utils::TextFiles::getFile(filename);
 

@@ -6,7 +6,8 @@
 #include "UniqueWordsCounter/utils/scanning.h"
 #include "UniqueWordsCounter/utils/textFiles.h"
 
-auto UniqueWordsCounter::Method::bufferScanning(const std::string &filename) -> size_t
+auto UniqueWordsCounter::Method::Sequential::bufferScanning(const std::string &filename)
+    -> size_t
 {
     auto file = Utils::TextFiles::getFile(filename);
 

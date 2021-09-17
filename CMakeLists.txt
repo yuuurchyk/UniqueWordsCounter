@@ -31,6 +31,7 @@ add_library(
     include/UniqueWordsCounter/utils/scanningImpl.h
     include/UniqueWordsCounter/utils/itemManager.h
     include/UniqueWordsCounter/utils/itemManagerImpl.h
+    src/methods.cpp
     src/method/baseline.cpp
     src/method/bufferScanning.cpp
     src/method/optimizedBaseline.cpp
@@ -42,7 +43,7 @@ add_library(
     src/utils/textFiles.cpp
 )
 target_include_directories(lib_${PROJECT_NAME} PUBLIC include PRIVATE src)
-target_link_libraries(lib_${PROJECT_NAME} PRIVATE ${CMAKE_THREAD_LIBS_INIT} TBB::tbb TBB::tbbmalloc)
+target_link_libraries(lib_${PROJECT_NAME} PRIVATE ${CMAKE_THREAD_LIBS_INIT} TBB::tbb)
 target_compile_definitions(lib_${PROJECT_NAME} PRIVATE DATA_FOLDER="${CMAKE_CURRENT_SOURCE_DIR}/data")
 
 add_executable(${PROJECT_NAME} examples/uniqueWordsCounter.cpp)
