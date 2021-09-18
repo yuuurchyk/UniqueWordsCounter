@@ -28,7 +28,7 @@ auto join(const std::initializer_list<std::string> &args,
         ""s,
         [&separator](std::string target, const std::string &source) -> std::string
         { return target.empty() ? source : std::move(target) + separator + source; });
-};
+}
 
 auto getSequentialMethod(const std::string &method)
     -> std::function<size_t(const std::filesystem::path &)>
@@ -87,7 +87,7 @@ auto determineNumberOfParallelJobs(int jobs) -> size_t
     if (jobs <= 0)
         throw std::runtime_error{ "Wrong number of jobs: "s + std::to_string(jobs) };
 
-    if (jobs > hardwareConcurrency)
+    if (static_cast<size_t>(jobs) > hardwareConcurrency)
         std::cerr << "Number of jobs " << jobs
                   << " is greater than hardware concurrency level: "
                   << hardwareConcurrency << std::endl;

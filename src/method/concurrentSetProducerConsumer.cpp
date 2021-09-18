@@ -1,6 +1,5 @@
 #include "UniqueWordsCounter/methods.h"
 
-#include <ranges>
 #include <stdexcept>
 #include <thread>
 #include <vector>
@@ -50,7 +49,7 @@ auto UniqueWordsCounter::Method::Parallel::concurrentSetProducerConsumer(
     auto       producerThreads = std::vector<std::thread>{};
     const auto producersNum    = jobs - 2;
     producerThreads.reserve(producersNum);
-    for (auto _ : std::ranges::iota_view{ 0ULL, producersNum })
+    for (auto i = size_t{}; i < producersNum; ++i)
         producerThreads.emplace_back(producer);
 
     Utils::Scanning::scanner(filepath, scanTaskManager);

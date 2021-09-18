@@ -3,7 +3,7 @@
 #include "itemManager.h"
 
 template <typename Item>
-UniqueWordsCounter::Utils::ItemManager<Item>::~ItemManager()
+UniqueWordsCounter::Utils::ItemManager<Item>::~ItemManager<Item>()
 {
     item_type *item{};
     while (_availableItems.try_pop(item))
@@ -12,7 +12,7 @@ UniqueWordsCounter::Utils::ItemManager<Item>::~ItemManager()
     while (true)
     {
         while (!_pendingItems.pop(item))
-            std::this_thread::yield;
+            std::this_thread::yield();
 
         if (item == nullptr)
             return;

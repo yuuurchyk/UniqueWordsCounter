@@ -62,7 +62,7 @@ auto UniqueWordsCounter::Utils::WordsSet<Allocator>::operator=(WordsSet &&rhs)
 }
 
 template <typename Allocator>
-UniqueWordsCounter::Utils::WordsSet<Allocator>::~WordsSet()
+UniqueWordsCounter::Utils::WordsSet<Allocator>::~WordsSet<Allocator>()
 {
     _allocator.deallocate(_elementsMemory, _elementsAllocated);
 }

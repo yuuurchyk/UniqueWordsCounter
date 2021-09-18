@@ -33,7 +33,7 @@ UniqueWordsCounter::Utils::Scanning::Buffer<Allocator>::Buffer(size_t           
 }
 
 template <typename Allocator>
-UniqueWordsCounter::Utils::Scanning::Buffer<Allocator>::~Buffer()
+UniqueWordsCounter::Utils::Scanning::Buffer<Allocator>::~Buffer<Allocator>()
 {
     _allocator.deallocate(_buffer, _bufferCapacity);
 }
@@ -135,7 +135,7 @@ void UniqueWordsCounter::Utils::Scanning::scanner(
 {
     auto file = Utils::TextFiles::getFile(filename);
 
-    auto firstTask = [&manager, &file]()
+    auto firstTask = [&file]()
     {
         auto firstTask = new ScanTask<Allocator>;
 

@@ -7,15 +7,13 @@
 
 namespace UniqueWordsCounter::Utils
 {
-// clang-format off
 template <typename Item>
-    requires(
-        std::is_same_v<Item, typename std::decay<Item>::type> &&
-        !std::is_pointer_v<Item>
-    )
 class ItemManager
-// clang-format on
 {
+    static_assert(std::is_same_v<Item, typename std::decay<Item>::type>,
+                  "CV qualified types are not allowed as managed items");
+    static_assert(!std::is_pointer_v<Item>, "Pointers are not allowed as managed items");
+
 public:
     using item_type = Item;
 

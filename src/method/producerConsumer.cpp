@@ -5,7 +5,6 @@
 #include <deque>
 #include <mutex>
 #include <optional>
-#include <ranges>
 #include <stdexcept>
 #include <thread>
 #include <unordered_set>
@@ -50,7 +49,7 @@ auto UniqueWordsCounter::Method::Parallel::producerConsumer(
         throw std::runtime_error{ kProducerConsumer +
                                   " method requires minimum 3 parallel jobs." };
 
-    constexpr auto kMaxWordsPerChunk = size_t{ 5000 };
+    constexpr auto kMaxWordsPerChunk = size_t{ 5'000 };
     const auto     consumersNum      = jobs - 2;
 
     using WordsChunk_type  = std::vector<std::string>;
@@ -66,7 +65,7 @@ auto UniqueWordsCounter::Method::Parallel::producerConsumer(
 
     // TODO: refactor lambdas to anonymous functions
     // reads the words by chunks
-    auto reader = [&chunksQueue, &file, &kMaxWordsPerChunk]()
+    auto reader = [&chunksQueue, &file]()
     {
         auto wordsChunk = WordsChunk_type{};
         auto word       = std::string{};
@@ -215,7 +214,7 @@ auto UniqueWordsCounter::Method::Parallel::producerConsumer(
 
     std::vector<std::thread> consumerThreads;
     consumerThreads.reserve(consumersNum);
-    for (auto _ : std::ranges::iota_view{ 0ULL, consumersNum })
+    for (auto i = size_t{}; i < consumersNum; ++i)
         consumerThreads.emplace_back(consumer);
 
     // run reader() in the main thread, join all the other ones

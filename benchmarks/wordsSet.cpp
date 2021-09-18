@@ -36,11 +36,11 @@ public:
         for (const auto &word : WordsGenerator{ kAllFiles })
         {
             words.push_back(word);
-            if (words.size() == wordsRequested)
+            if (words.size() == static_cast<size_t>(wordsRequested))
                 break;
         }
 
-        if (words.size() < wordsRequested)
+        if (words.size() < static_cast<size_t>(wordsRequested))
         {
             std::cerr << "Warning: " << wordsRequested
                       << " words requrest, but the benchmark can only be run with "

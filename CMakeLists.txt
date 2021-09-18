@@ -137,3 +137,8 @@ set_target_properties(
     CXX_STANDARD_REQUIRED ON
     CXX_EXTENSIONS OFF
 )
+if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+    foreach(target ${Targets})
+        target_compile_options(${target} PRIVATE -Wall -Wextra -Wpedantic)
+    endforeach()
+endif()
