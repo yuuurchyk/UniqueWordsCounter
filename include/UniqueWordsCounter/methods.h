@@ -15,6 +15,7 @@ namespace Sequential
 
     auto bufferScanning(const std::filesystem::path &filepath) -> size_t;
     auto optimizedBaseline(const std::filesystem::path &filepath) -> size_t;
+
 }    // namespace Sequential
 
 extern const std::string                        kBaseline;
@@ -22,15 +23,14 @@ extern const std::string                        kBufferScanning;
 extern const std::string                        kOptimizedBaseline;
 extern const std::initializer_list<std::string> kSequentialMethods;
 
-// TODO: refactor to take jobs argument
 namespace Parallel
 {
-    auto producerConsumer(const std::filesystem::path &filepath, size_t consumersNum)
+    auto producerConsumer(const std::filesystem::path &filepath, size_t jobs) -> size_t;
+    auto concurrentSetProducerConsumer(const std::filesystem::path &filepath, size_t jobs)
         -> size_t;
-    auto concurrentSetProducerConsumer(const std::filesystem::path &filepath,
-                                       size_t producersNum) -> size_t;
-    auto optimizedProducerConsumer(const std::filesystem::path &filepath,
-                                   size_t                       producersNum) -> size_t;
+    auto optimizedProducerConsumer(const std::filesystem::path &filepath, size_t jobs)
+        -> size_t;
+
 }    // namespace Parallel
 
 extern const std::string                        kProducerConsumer;

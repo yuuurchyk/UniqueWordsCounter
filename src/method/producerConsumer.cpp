@@ -5,6 +5,7 @@
 #include <deque>
 #include <mutex>
 #include <optional>
+#include <ranges>
 #include <stdexcept>
 #include <thread>
 #include <unordered_set>
@@ -41,45 +42,33 @@ struct ThreadSafeContainer
  */
 auto UniqueWordsCounter::Method::Parallel::producerConsumer(
     const std::filesystem::path &filepath,
-    size_t                       consumersNum) -> size_t
+    size_t                       jobs) -> size_t
 {
     auto file = Utils::TextFiles::getFile(filepath);
 
-    if (consumersNum == 0)
-        throw std::runtime_error{ "There should be at least one consumer" };
+    if (jobs < 3)
+        throw std::runtime_error{ kProducerConsumer +
+                                  " method requires minimum 3 parallel jobs." };
 
-    // determine number of words per chunk and number of consumer threads
     constexpr auto kMaxWordsPerChunk = size_t{ 5000 };
-    const auto     kConsumersNum     = [&consumersNum]() -> size_t
-    {
-        auto result = size_t{ std::thread::hardware_concurrency() };
+    const auto     consumersNum      = jobs - 2;
 
-        if (result <= 2)
-            result = 1;
-        else
-            result -= 2;
-
-        result = std::min(result, consumersNum);
-
-        return result;
-    }();
-
-    using WordsChunk_t  = std::vector<std::string>;
-    using UniqueWords_t = std::unordered_set<std::string>;
+    using WordsChunk_type  = std::vector<std::string>;
+    using UniqueWords_type = std::unordered_set<std::string>;
 
     // std::optional is used to indicate the death pill.
     // Upon receiving, the thread should put it back and terminate execution.
     // There should be only 1 copy of the death pill located at the end
     // of the queues
-    auto chunksQueue = ThreadSafeContainer<std::deque<std::optional<WordsChunk_t>>>{};
+    auto chunksQueue = ThreadSafeContainer<std::deque<std::optional<WordsChunk_type>>>{};
     auto uniqueWordsQueue =
-        ThreadSafeContainer<std::deque<std::optional<UniqueWords_t>>>{};
+        ThreadSafeContainer<std::deque<std::optional<UniqueWords_type>>>{};
 
     // TODO: refactor lambdas to anonymous functions
     // reads the words by chunks
     auto reader = [&chunksQueue, &file, &kMaxWordsPerChunk]()
     {
-        auto wordsChunk = WordsChunk_t{};
+        auto wordsChunk = WordsChunk_type{};
         auto word       = std::string{};
 
         // do while is used to produce minimum 1 chunk
@@ -116,7 +105,7 @@ auto UniqueWordsCounter::Method::Parallel::producerConsumer(
     auto producer = [&chunksQueue, &uniqueWordsQueue]()
     {
         auto item        = decltype(chunksQueue.elements)::value_type{};
-        auto uniqueWords = UniqueWords_t{};
+        auto uniqueWords = UniqueWords_type{};
 
         while (true)
         {
@@ -222,24 +211,22 @@ auto UniqueWordsCounter::Method::Parallel::producerConsumer(
     };
 
     // instantiate threads
-    std::thread producerThread{ producer };
+    auto producerThread = std::thread{ producer };
 
     std::vector<std::thread> consumerThreads;
-    consumerThreads.reserve(kConsumersNum);
-    for (auto i = decltype(kConsumersNum){}; i < kConsumersNum; ++i)
+    consumerThreads.reserve(consumersNum);
+    for (auto _ : std::ranges::iota_view{ 0ULL, consumersNum })
         consumerThreads.emplace_back(consumer);
 
     // run reader() in the main thread, join all the other ones
     reader();
     file.close();
     producerThread.join();
-    for (auto &&consumerThread : consumerThreads)
+    for (auto &consumerThread : consumerThreads)
         consumerThread.join();
 
     // at the end uniqueWordsQueue should have the resulting set
     // and the death pill
-    std::scoped_lock lck{ uniqueWordsQueue.mutex };
-
     auto &elements = uniqueWordsQueue.elements;
     if (elements.size() != 2 || !elements[0].has_value() || elements[1].has_value())
         throw std::logic_error{ "Wrong structure of the resulting queue" };

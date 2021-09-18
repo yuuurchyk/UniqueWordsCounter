@@ -92,7 +92,7 @@ auto determineNumberOfParallelJobs(int jobs) -> size_t
                   << " is greater than hardware concurrency level: "
                   << hardwareConcurrency << std::endl;
 
-    return hardwareConcurrency;
+    return jobs;
 }
 
 auto getMethodImplementation(const std::string &method,

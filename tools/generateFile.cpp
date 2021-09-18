@@ -4,7 +4,6 @@
 #include <cstring>
 #include <filesystem>
 #include <fstream>
-#include <iostream>
 #include <random>
 #include <stdexcept>
 #include <string>
@@ -92,29 +91,19 @@ auto main(int argc, char **argv) -> int
         .default_value(size_t{})
         .help("Seed to use for random letters generation. If 0, no seed is used");
 
-    try
-    {
-        program.parse_args(argc, argv);
+    program.parse_args(argc, argv);
 
-        const auto &wordsSizeMean   = program.get<double>("--words-size-mean");
-        const auto &wordsSizeStddev = program.get<double>("--words-size-stddev");
+    const auto &wordsSizeMean   = program.get<double>("--words-size-mean");
+    const auto &wordsSizeStddev = program.get<double>("--words-size-stddev");
 
-        if (wordsSizeMean <= 0)
-            throw std::runtime_error{ "Word size mean "s + std::to_string(wordsSizeMean) +
-                                      " should be positive"s };
-        if (wordsSizeStddev <= 0)
-            throw std::runtime_error{ "Word size stddev "s +
-                                      std::to_string(wordsSizeStddev) +
-                                      " should be positive"s };
-        if (wordsSizeMean - 2 * wordsSizeStddev < 0)
-            throw std::runtime_error{ "Word size: mean - 2 * stddev should be positive" };
-    }
-    catch (const std::exception &e)
-    {
-        std::cerr << "Failed to parse command line arguments:\n";
-        std::cerr << e.what() << std::endl;
-        return EXIT_FAILURE;
-    }
+    if (wordsSizeMean <= 0)
+        throw std::runtime_error{ "Word size mean "s + std::to_string(wordsSizeMean) +
+                                  " should be positive"s };
+    if (wordsSizeStddev <= 0)
+        throw std::runtime_error{ "Word size stddev "s + std::to_string(wordsSizeStddev) +
+                                  " should be positive"s };
+    if (wordsSizeMean - 2 * wordsSizeStddev < 0)
+        throw std::runtime_error{ "Word size: mean - 2 * stddev should be positive" };
 
     generateFile(program.get("--path"),
                  program.get<size_t>("--bytes"),

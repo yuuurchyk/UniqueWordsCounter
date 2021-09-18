@@ -2,8 +2,10 @@
 
 #include <cstddef>
 #include <future>
+#include <iostream>
 #include <memory>
 #include <mutex>
+#include <stdexcept>
 #include <string>
 #include <thread>
 #include <utility>
@@ -16,7 +18,7 @@
 
 auto UniqueWordsCounter::Method::Parallel::optimizedProducerConsumer(
     const std::filesystem::path &filepath,
-    size_t                       producersNum) -> size_t
+    size_t                       jobs) -> size_t
 {
     using Utils::ItemManager;
     using Utils::WordsSet;
@@ -24,6 +26,13 @@ auto UniqueWordsCounter::Method::Parallel::optimizedProducerConsumer(
 
     auto scanTaskManager    = ItemManager<ScanTask<>>{};
     auto producerSetManager = ItemManager<WordsSet<>>{};
+
+    if (jobs < 3)
+        throw std::runtime_error{ kOptimizedProducerConsumer +
+                                  " method requires minimum 3 parallel jobs." };
+    if (jobs > 3)
+        std::cerr << kOptimizedProducerConsumer << " method can use 3 parallel jobs max."
+                  << std::endl;
 
     // TODO: refactor to anonymous function
     auto producer = [&scanTaskManager, &producerSetManager]()

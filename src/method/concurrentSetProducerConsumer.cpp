@@ -1,5 +1,7 @@
 #include "UniqueWordsCounter/methods.h"
 
+#include <ranges>
+#include <stdexcept>
 #include <thread>
 #include <vector>
 
@@ -10,10 +12,14 @@
 
 auto UniqueWordsCounter::Method::Parallel::concurrentSetProducerConsumer(
     const std::filesystem::path &filepath,
-    size_t                       producersNum) -> size_t
+    size_t                       jobs) -> size_t
 {
     using Utils::ItemManager;
     using Utils::Scanning::ScanTask;
+
+    if (jobs < 3)
+        throw std::runtime_error{ kConcurrentSetProducerConsumer +
+                                  " method requires minimum 3 parallel jobs." };
 
     auto scanTaskManager = ItemManager<ScanTask<>>{};
     auto uniqueWords     = tbb::concurrent_unordered_set<std::string>{};
@@ -41,9 +47,10 @@ auto UniqueWordsCounter::Method::Parallel::concurrentSetProducerConsumer(
         }
     };
 
-    auto producerThreads = std::vector<std::thread>{};
+    auto       producerThreads = std::vector<std::thread>{};
+    const auto producersNum    = jobs - 2;
     producerThreads.reserve(producersNum);
-    for (auto i = size_t{}; i < producersNum; ++i)
+    for (auto _ : std::ranges::iota_view{ 0ULL, producersNum })
         producerThreads.emplace_back(producer);
 
     Utils::Scanning::scanner(filepath, scanTaskManager);
