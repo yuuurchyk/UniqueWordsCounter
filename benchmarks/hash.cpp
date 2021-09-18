@@ -1,6 +1,5 @@
 #include <cstddef>
 #include <random>
-#include <sstream>
 #include <stdexcept>
 #include <string>
 
@@ -18,16 +17,14 @@ public:
 
     void SetUp(const benchmark::State &state) override
     {
+        using namespace std::string_literals;
+
         TearDown(state);
 
         const auto &desiredLen = state.range(0);
         if (desiredLen <= 0)
-        {
-            auto errorMessage = std::stringstream{};
-            errorMessage << "Word length should be positive, got " << desiredLen
-                         << " instead";
-            throw std::runtime_error{ errorMessage.str() };
-        }
+            throw std::runtime_error{ "Word length should be positive, got "s +
+                                      std::to_string(desiredLen) + " instead."s };
 
         len = desiredLen;
         std::mt19937                        gen{ len };
