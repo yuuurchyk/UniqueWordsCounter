@@ -1,6 +1,6 @@
 # Unique Words Counter
 
-This repository contains source code used in *Justifiably Complex Solution to a Dead Simple Concurrency Task* medium article. You can read it here.
+This repository contains source code used in *Justifiably Complex Solution to a Dead Simple Concurrency Task* medium article.
 
 TODO: add link to article.
 
@@ -10,17 +10,19 @@ This repository contains the collection of methods I experimented with when solv
 
 **Note:** many methods are not optimal in terms of either CPU utilization or performance. They are present for benchmarking purposes only. See the benchmark results below to identify the good ones.
 
+TODO: add benchmark results
+
 ## Building
 
 ### Compiler
 
 The project uses **C++20**, so the latest compiler is required. The following toolchains were tested:
 
-| Compiler | OS |
-| - | - |
-| **GCC** >= 10.3.0 | *Ubuntu 20.04* |
-| **Clang** >= 12.0.0 | *Ubuntu 20.04* |
-| // TODO: add info on MSVC | Windows10 |
+| Compiler | OS | Bitness |
+| - | - | - |
+| **GCC** >= 10.3.0 | *Ubuntu 20.04* | x64 |
+| **Clang** >= 12.0.0 | *Ubuntu 20.04* | x64 |
+| **MSVC** v142 - VS 2019 | *Windows10* | x64 |
 
 ### Additional Libraries
 
@@ -41,7 +43,6 @@ The following options are available:
 |-----|--------|------|
 | **WithBenchmarks** | *ON* | include *google benchmark* library and benchmark targets |
 | **WithTests** | *ON* | include *google test* library and test targets |
-| **AddGprofFlags** | *OFF* | Add gprof compilation flags to all the executables (useful when profiling) |
 
 ### Known Issues
 
@@ -65,6 +66,3 @@ cmake --build . --target generateFile
 ./generateFile --path ./data/syntheticShortWords1000MB.txt --bytes 1048576000 --words-size-mean 5 --words-size-stddev 2 --seed 1000
 ./generateFile --path ./data/syntheticLongWords1000MB.txt --bytes 1048576000 --words-size-mean 15 --words-size-stddev 5 --seed 1000
 ```
-
-TODO: add benchmark results
-TODO: refactor for loops to iota_view

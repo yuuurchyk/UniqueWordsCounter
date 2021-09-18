@@ -9,13 +9,6 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
 find_package(Threads REQUIRED)
 
-option(AddGprofFlags "Whether to compile with -pg flag" OFF)
-if(AddGprofFlags)
-    message(STATUS "Building for profiling with gprof")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pg")
-    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -pg")
-endif()
-
 include(tbb)
 include(argparse)
 
