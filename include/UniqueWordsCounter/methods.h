@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstddef>
+#include <filesystem>
 #include <initializer_list>
 #include <string>
 
@@ -10,10 +11,10 @@ namespace UniqueWordsCounter::Method
 {
 namespace Sequential
 {
-    auto baseline(const std::string &filename) -> size_t;
+    auto baseline(const std::filesystem::path &filepath) -> size_t;
 
-    auto bufferScanning(const std::string &filename) -> size_t;
-    auto optimizedBaseline(const std::string &fiename) -> size_t;
+    auto bufferScanning(const std::filesystem::path &filepath) -> size_t;
+    auto optimizedBaseline(const std::filesystem::path &filepath) -> size_t;
 }    // namespace Sequential
 
 extern const std::string                        kBaseline;
@@ -24,11 +25,12 @@ extern const std::initializer_list<std::string> kSequentialMethods;
 // TODO: refactor to take jobs argument
 namespace Parallel
 {
-    auto producerConsumer(const std::string &filename, size_t consumersNum) -> size_t;
-    auto concurrentSetProducerConsumer(const std::string &filename, size_t producersNum)
+    auto producerConsumer(const std::filesystem::path &filepath, size_t consumersNum)
         -> size_t;
-    auto optimizedProducerConsumer(const std::string &filename, size_t producersNum)
-        -> size_t;
+    auto concurrentSetProducerConsumer(const std::filesystem::path &filepath,
+                                       size_t producersNum) -> size_t;
+    auto optimizedProducerConsumer(const std::filesystem::path &filepath,
+                                   size_t                       producersNum) -> size_t;
 }    // namespace Parallel
 
 extern const std::string                        kProducerConsumer;

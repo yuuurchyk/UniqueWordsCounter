@@ -15,8 +15,8 @@
 #include "UniqueWordsCounter/utils/wordsSet.h"
 
 auto UniqueWordsCounter::Method::Parallel::optimizedProducerConsumer(
-    const std::string &filename,
-    size_t             producersNum) -> size_t
+    const std::filesystem::path &filepath,
+    size_t                       producersNum) -> size_t
 {
     using Utils::ItemManager;
     using Utils::WordsSet;
@@ -81,7 +81,7 @@ auto UniqueWordsCounter::Method::Parallel::optimizedProducerConsumer(
     auto producerThread = std::thread{ producer };
     auto consumerThread = std::thread{ consumer };
 
-    Utils::Scanning::scanner(filename, scanTaskManager);
+    Utils::Scanning::scanner(filepath, scanTaskManager);
 
     producerThread.join();
     producerSetManager.addDeathPill();

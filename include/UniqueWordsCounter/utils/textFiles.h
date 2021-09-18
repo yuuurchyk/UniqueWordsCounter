@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstddef>
+#include <filesystem>
 #include <fstream>
 #include <initializer_list>
 #include <iterator>
@@ -9,29 +10,28 @@
 
 namespace UniqueWordsCounter::Utils::TextFiles
 {
-// TODO: refactor to use std::filesystem::path?
-extern const std::string kEmpty;
-extern const std::string kSample;
+extern const std::filesystem::path kEmpty;
+extern const std::filesystem::path kSample;
 
-extern const std::string kSyntheticShortWords10MB;
-extern const std::string kSyntheticLongWords10MB;
+extern const std::filesystem::path kSyntheticShortWords10MB;
+extern const std::filesystem::path kSyntheticLongWords10MB;
 
-extern const std::string kSyntheticShortWords100MB;
-extern const std::string kSyntheticLongWords100MB;
+extern const std::filesystem::path kSyntheticShortWords100MB;
+extern const std::filesystem::path kSyntheticLongWords100MB;
 
-extern const std::string kSyntheticShortWords1000MB;
-extern const std::string kSyntheticLongWords1000MB;
+extern const std::filesystem::path kSyntheticShortWords1000MB;
+extern const std::filesystem::path kSyntheticLongWords1000MB;
 
-extern const std::string kEnglishWords;
+extern const std::filesystem::path kEnglishWords;
 
-extern const std::initializer_list<std::string> kAllFiles;
+extern const std::initializer_list<std::filesystem::path> kAllFiles;
 
-auto getFile(const std::string &filename) -> std::ifstream;
+auto getFile(const std::filesystem::path &filename) -> std::ifstream;
 
 class WordsGenerator
 {
 public:
-    WordsGenerator(std::initializer_list<std::string> files);
+    WordsGenerator(std::initializer_list<std::filesystem::path> files);
 
     WordsGenerator(const WordsGenerator &) = delete;
     WordsGenerator &operator=(const WordsGenerator &) = delete;
@@ -74,10 +74,10 @@ public:
 private:
     void advance();
 
-    std::vector<std::string> _files;
+    std::vector<std::filesystem::path> _files;
 
-    std::vector<std::string>::const_iterator _currentFileName;
-    std::ifstream                            _currentFile;
+    std::vector<std::filesystem::path>::const_iterator _currentFileName;
+    std::ifstream                                      _currentFile;
 
     std::string _word;
     size_t      _wordCounter{};

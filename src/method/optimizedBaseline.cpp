@@ -9,9 +9,9 @@
 #include "UniqueWordsCounter/utils/wordsSet.h"
 
 auto UniqueWordsCounter::Method::Sequential::optimizedBaseline(
-    const std::string &filename) -> size_t
+    const std::filesystem::path &filepath) -> size_t
 {
-    auto file = Utils::TextFiles::getFile(filename);
+    auto file = Utils::TextFiles::getFile(filepath);
 
     auto uniqueWords = Utils::WordsSet{};
     auto longWords   = std::unordered_set<std::string>{};

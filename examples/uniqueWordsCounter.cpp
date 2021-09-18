@@ -31,13 +31,14 @@ auto join(const std::initializer_list<std::string> &args,
 };
 
 auto getSequentialMethod(const std::string &method)
-    -> std::function<size_t(const std::string &)>
+    -> std::function<size_t(const std::filesystem::path &)>
 {
     using namespace UniqueWordsCounter::Method;
     using namespace UniqueWordsCounter::Method::Sequential;
 
     const auto kExecutionMap =
-        std::unordered_map<std::string, std::function<size_t(const std::string &)>>{
+        std::unordered_map<std::string,
+                           std::function<size_t(const std::filesystem::path &)>>{
             { kBaseline, baseline },
             { kBufferScanning, bufferScanning },
             { kOptimizedBaseline, optimizedBaseline }
@@ -47,14 +48,14 @@ auto getSequentialMethod(const std::string &method)
 }
 
 auto getParallelMethod(const std::string &method)
-    -> std::function<size_t(const std::string &, size_t)>
+    -> std::function<size_t(const std::filesystem::path &, size_t)>
 {
     using namespace UniqueWordsCounter::Method;
     using namespace UniqueWordsCounter::Method::Parallel;
 
     const auto kExecutionMap =
         std::unordered_map<std::string,
-                           std::function<size_t(const std::string &, size_t)>>{
+                           std::function<size_t(const std::filesystem::path &, size_t)>>{
             { kProducerConsumer, producerConsumer },
             { kConcurrentSetProducerConsumer, concurrentSetProducerConsumer },
             { kOptimizedProducerConsumer, optimizedProducerConsumer }

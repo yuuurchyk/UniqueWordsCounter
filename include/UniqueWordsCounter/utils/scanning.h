@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstddef>
+#include <filesystem>
 #include <fstream>
 #include <functional>
 #include <future>
@@ -56,7 +57,7 @@ struct ScanTask
 };
 
 template <typename Allocator = std::allocator<char>>
-void scanner(const std::string &filename, ItemManager<ScanTask<Allocator>> &);
+void scanner(const std::filesystem::path &filepath, ItemManager<ScanTask<Allocator>> &);
 
 }    // namespace UniqueWordsCounter::Utils::Scanning
 

@@ -12,33 +12,34 @@
 
 namespace
 {
-size_t getBaselineResult(const std::string &filename)
+auto getBaselineResult(const std::filesystem::path &filepath) -> size_t
 {
     static auto results = std::unordered_map<std::string, size_t>{};
 
-    if (!results.contains(filename))
+    if (!results.contains(filepath))
         results.insert(
-            { filename, UniqueWordsCounter::Method::Sequential::baseline(filename) });
+            { filepath, UniqueWordsCounter::Method::Sequential::baseline(filepath) });
 
-    return results.at(filename);
+    return results.at(filepath);
 }
 
 }    // namespace
 
-using FunctionData_t = std::tuple<std::string, std::function<size_t(std::string)>>;
-using TestParam_t    = std::tuple<std::string, FunctionData_t>;
+using FunctionData_type =
+    std::tuple<std::string, std::function<size_t(std::filesystem::path)>>;
+using TestParam_type = std::tuple<std::filesystem::path, FunctionData_type>;
 
-class MethodsCorrectnessFixture : public ::testing::TestWithParam<TestParam_t>
+class MethodsCorrectnessFixture : public ::testing::TestWithParam<TestParam_type>
 {
 };
 
 TEST_P(MethodsCorrectnessFixture, ResultsComparison)
 {
-    const auto &[filename, functionData] = GetParam();
+    const auto &[filepath, functionData] = GetParam();
     const auto &[functionName, function] = functionData;
 
-    const auto &baselineResult = getBaselineResult(filename);
-    const auto &functionResult = function(filename);
+    const auto &baselineResult = getBaselineResult(filepath);
+    const auto &functionResult = function(filepath);
 
     ASSERT_EQ(baselineResult, functionResult)
         << "Method " << functionName
@@ -55,11 +56,11 @@ INSTANTIATE_TEST_SUITE_P(
         ::testing::ValuesIn(UniqueWordsCounter::Utils::TextFiles::kAllFiles),
         ::testing::ValuesIn({
             std::make_tuple("bufferScanning"s,
-                            std::function<size_t(std::string)>{
+                            std::function<size_t(std::filesystem::path)>{
                                 UniqueWordsCounter::Method::Sequential::bufferScanning }),
             std::make_tuple(
                 "optimizedBaseline"s,
-                std::function<size_t(std::string)>{
+                std::function<size_t(std::filesystem::path)>{
                     UniqueWordsCounter::Method::Sequential::optimizedBaseline })
             // TODO: add other methods
         })),

@@ -130,7 +130,7 @@ void UniqueWordsCounter::Utils::Scanning::bufferScanning(
 
 template <typename Allocator>
 void UniqueWordsCounter::Utils::Scanning::scanner(
-    const std::string &               filename,
+    const std::filesystem::path &     filename,
     ItemManager<ScanTask<Allocator>> &manager)
 {
     auto file = Utils::TextFiles::getFile(filename);

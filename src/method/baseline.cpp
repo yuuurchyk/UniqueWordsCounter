@@ -6,10 +6,10 @@
 
 #include "UniqueWordsCounter/utils/textFiles.h"
 
-auto UniqueWordsCounter::Method::Sequential::baseline(const std::string &filename)
-    -> size_t
+auto UniqueWordsCounter::Method::Sequential::baseline(
+    const std::filesystem::path &filepath) -> size_t
 {
-    auto file = Utils::TextFiles::getFile(filename);
+    auto file = Utils::TextFiles::getFile(filepath);
 
     auto uniqueWords = std::unordered_set<std::string>{};
 

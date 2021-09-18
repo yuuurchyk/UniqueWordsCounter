@@ -9,8 +9,8 @@
 #include "UniqueWordsCounter/utils/scanning.h"
 
 auto UniqueWordsCounter::Method::Parallel::concurrentSetProducerConsumer(
-    const std::string &filename,
-    size_t             producersNum) -> size_t
+    const std::filesystem::path &filepath,
+    size_t                       producersNum) -> size_t
 {
     using Utils::ItemManager;
     using Utils::Scanning::ScanTask;
@@ -46,7 +46,7 @@ auto UniqueWordsCounter::Method::Parallel::concurrentSetProducerConsumer(
     for (auto i = size_t{}; i < producersNum; ++i)
         producerThreads.emplace_back(producer);
 
-    Utils::Scanning::scanner(filename, scanTaskManager);
+    Utils::Scanning::scanner(filepath, scanTaskManager);
 
     for (auto &&producerThread : producerThreads)
         producerThread.join();
