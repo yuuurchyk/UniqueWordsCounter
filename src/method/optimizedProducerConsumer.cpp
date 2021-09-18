@@ -9,8 +9,6 @@
 #include <unordered_set>
 #include <utility>
 
-#include "tbb/concurrent_unordered_set.h"
-
 #include "UniqueWordsCounter/utils/itemManager.h"
 #include "UniqueWordsCounter/utils/scanning.h"
 #include "UniqueWordsCounter/utils/wordsSet.h"
@@ -22,7 +20,9 @@ using ScanTaskManager_type = UniqueWordsCounter::Utils::ItemManager<
 using WordsSetManager_type =
     UniqueWordsCounter::Utils::ItemManager<UniqueWordsCounter::Utils::WordsSet<>>;
 
-using LongWords_type = tbb::concurrent_unordered_set<std::string>;
+// note: should be replaced with concurrent_unordered_set
+// when using multiple producers
+using LongWords_type = std::unordered_set<std::string>;
 
 auto producer(ScanTaskManager_type &scanTaskManager,
               WordsSetManager_type &wordsSetManager,
