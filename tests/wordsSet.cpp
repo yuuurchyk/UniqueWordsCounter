@@ -1,9 +1,9 @@
-#include "gtest/gtest.h"
-
 #include <cstddef>
 #include <random>
 #include <string>
 #include <unordered_set>
+
+#include "gtest/gtest.h"
 
 #include "UniqueWordsCounter/utils/textFiles.h"
 #include "UniqueWordsCounter/utils/wordsSet.h"

@@ -40,5 +40,5 @@ auto UniqueWordsCounter::Method::Sequential::optimizedBaseline(
     if (!lastWord.empty())
         wordCallback(lastWord.data(), lastWord.size());
 
-    return uniqueWords.size();
+    return uniqueWords.size() + longWords.size();
 }

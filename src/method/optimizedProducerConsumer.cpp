@@ -96,5 +96,5 @@ auto UniqueWordsCounter::Method::Parallel::optimizedProducerConsumer(
 
     consumerThread.join();
 
-    return consumerSet.size();
+    return consumerSet.size() + longWords.size();
 }
