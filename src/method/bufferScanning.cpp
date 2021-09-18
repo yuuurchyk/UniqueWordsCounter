@@ -6,6 +6,21 @@
 #include "UniqueWordsCounter/utils/scanning.h"
 #include "UniqueWordsCounter/utils/textFiles.h"
 
+/**
+ * @brief Sequential baseline with a custom scanning routine.
+ *
+ * Superstructure over UniqueWordsCounter::Method::Sequential::baseline.
+ * Method still uses standard c++ containers to store the words,
+ * but the scanning is done by manual inspection of big raw buffers
+ * of characters.
+ *
+ * @param filepath - path to the file to count the number of unique words in
+ * @return size_t - number of unique words in a file provided in \p filepath
+ *
+ * @see UniqueWordsCounter::Method::Sequential::baseline
+ * @see UniqueWordsCounter::Utils::Buffer
+ * @see UniqueWordsCounter::Utils::Scanning::bufferScanning
+ */
 auto UniqueWordsCounter::Method::Sequential::bufferScanning(
     const std::filesystem::path &filepath) -> size_t
 {

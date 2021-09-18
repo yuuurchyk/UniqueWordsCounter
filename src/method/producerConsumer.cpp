@@ -26,18 +26,20 @@ struct ThreadSafeContainer
 }    // namespace
 
 /**
- * @brief parallel single producer multiple consumer pattern.
+ * @brief Single producer multiple consumer parallel baseline.
  *
- * The following threads are launched:
- * 1. reader (1 thread) - reads chunks of words into producer queue
- * 2. producer (1 thread) - forms set of unique words out of the chunk.
- *  Pushes unique words into shared consumers' queue
- * 3. consumer (multiple threads) - merges sets in consumers' queue
+ * The following threads are instantiated:
+ * - reader (single thread) - reads chunk of wods into producer queue
+ * - producer (single thread) - forms set of unique words out of reader chunk.
+ *      Pushes unique words into shared consumers' queue
+ * - consumer (multiple threads) - merges sets in consumer's queue
  *
- * @param filename - name of the file to count unique words in
- * @param consumersNum - number of consumer thread to launch. Should not be zero. If
- * the value of too big, it is reduced to (hardware_concurrency - 2)
- * @return size_t - number of unique words in a file pointed by @p filename
+ * @note all reader/producer/consumer operations/containers are implemented using
+ * standard c++ containers/file reading operations.
+ *
+ * @param filepath - path to the file to count the number of unique words in
+ * @param jobs - number of parallel jobs to launch (min. 3 is required)
+ * @return size_t - number of unique words in a file provided in \p filepath
  */
 auto UniqueWordsCounter::Method::Parallel::producerConsumer(
     const std::filesystem::path &filepath,
@@ -79,9 +81,7 @@ auto UniqueWordsCounter::Method::Parallel::producerConsumer(
             wordsChunk.reserve(kMaxWordsPerChunk);
 
             // read words into the chunk
-            for (auto i = decltype(kMaxWordsPerChunk){};
-                 i < kMaxWordsPerChunk && file >> word;
-                 ++i)
+            for (auto i = size_t{}; i < kMaxWordsPerChunk && file >> word; ++i)
                 wordsChunk.push_back(std::move(word));
 
             // push the resulting chunk into the queue, notify producer
@@ -195,7 +195,7 @@ auto UniqueWordsCounter::Method::Parallel::producerConsumer(
             auto &rhs = rhsItem.value();
             if (rhs.size() > lhs.size())
                 std::swap(lhs, rhs);
-            for (auto &&item : rhs)
+            for (auto &item : rhs)
                 lhs.insert(std::move(item));
 
             // put lhs back into the queue
@@ -212,7 +212,7 @@ auto UniqueWordsCounter::Method::Parallel::producerConsumer(
     // instantiate threads
     auto producerThread = std::thread{ producer };
 
-    std::vector<std::thread> consumerThreads;
+    auto consumerThreads = std::vector<std::thread>{};
     consumerThreads.reserve(consumersNum);
     for (auto i = size_t{}; i < consumersNum; ++i)
         consumerThreads.emplace_back(consumer);

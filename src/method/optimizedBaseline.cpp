@@ -8,6 +8,22 @@
 #include "UniqueWordsCounter/utils/textFiles.h"
 #include "UniqueWordsCounter/utils/wordsSet.h"
 
+/**
+ * @brief Sequential baseline with an optimized scanning routine and custom words
+ * container.
+ *
+ * Superstructure over UniqueWordsCounter::Method::Sequential::bufferScanning.
+ * In addition to custom scanning routine, the method also uses a custom version
+ * of a string set, which is more optimal for everyday english words in terms of
+ * cache locality and number of memory allocations when compared to a standard
+ * c++ containers.
+ *
+ * @param filepath - path to the file to count the number of unique words in
+ * @return size_t - number of unique words in a file provided in \p filepath
+ *
+ * @see UniqueWordsCounter::Method::Sequential::bufferScanning
+ * @see UniqueWordsCounter::Utils::WordsSet
+ */
 auto UniqueWordsCounter::Method::Sequential::optimizedBaseline(
     const std::filesystem::path &filepath) -> size_t
 {
