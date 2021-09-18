@@ -1,16 +1,12 @@
 #include "UniqueWordsCounter/methods.h"
 
 #include <cstddef>
-#include <future>
 #include <iostream>
-#include <memory>
-#include <mutex>
 #include <stdexcept>
 #include <string>
 #include <thread>
+#include <unordered_set>
 #include <utility>
-
-#include "tbb/concurrent_queue.h"
 
 #include "UniqueWordsCounter/utils/itemManager.h"
 #include "UniqueWordsCounter/utils/scanning.h"
@@ -26,6 +22,7 @@ auto UniqueWordsCounter::Method::Parallel::optimizedProducerConsumer(
 
     auto scanTaskManager    = ItemManager<ScanTask<>>{};
     auto producerSetManager = ItemManager<WordsSet<>>{};
+    auto longWords          = std::unordered_set<std::string>{};
 
     if (jobs < 3)
         throw std::runtime_error{ kOptimizedProducerConsumer +
@@ -35,7 +32,7 @@ auto UniqueWordsCounter::Method::Parallel::optimizedProducerConsumer(
                   << std::endl;
 
     // TODO: refactor to anonymous function
-    auto producer = [&scanTaskManager, &producerSetManager]()
+    auto producer = [&scanTaskManager, &producerSetManager, &longWords]()
     {
         auto producerSet = new WordsSet<>{ 1ULL << 10 };
 
@@ -49,11 +46,13 @@ auto UniqueWordsCounter::Method::Parallel::optimizedProducerConsumer(
                 return;
             }
 
-            auto wordCallback =
-                [&producerSet, &producerSetManager](const char *text, size_t len)
+            auto wordCallback = [&producerSet, &producerSetManager, &longWords](
+                                    const char *text, size_t len)
             {
-                // TODO: consider long words
-                producerSet->emplace(text, len);
+                if (!producerSet->canEmplace(text, len)) [[unlikely]]
+                    longWords.emplace(text, len);
+                else [[likely]]
+                    producerSet->emplace(text, len);
                 if (producerSet->elementsUntilRehash() <= size_t{ 1 })
                 {
                     producerSetManager.setPending(*producerSet);
