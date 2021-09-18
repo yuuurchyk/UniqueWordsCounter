@@ -63,7 +63,7 @@ BENCHMARK_DEFINE_F(WordsFixture, BM_unordered_set_of_strings)(benchmark::State &
         benchmark::DoNotOptimize(size = uniqueWords.size());
     }
 
-    state.counters["uniqueWords"] = size;
+    state.counters["uniqueWords"] = static_cast<double>(size);
 }
 
 BENCHMARK_DEFINE_F(WordsFixture, BM_open_address_set)(benchmark::State &state)
@@ -78,13 +78,15 @@ BENCHMARK_DEFINE_F(WordsFixture, BM_open_address_set)(benchmark::State &state)
         {
             if (!uniqueWords.canEmplace(word.data(), word.size()))
                 continue;
-            uniqueWords.emplace(word.data(), word.size());
+            uniqueWords.emplace(
+                word.data(),
+                static_cast<decltype(uniqueWords)::element_type::size_type>(word.size()));
         }
 
         benchmark::DoNotOptimize(size = uniqueWords.size());
     }
 
-    state.counters["uniqueWords"] = size;
+    state.counters["uniqueWords"] = static_cast<double>(size);
 }
 
 BENCHMARK_REGISTER_F(WordsFixture, BM_unordered_set_of_strings)

@@ -141,4 +141,8 @@ if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID STREQUAL "Clan
     foreach(target ${Targets})
         target_compile_options(${target} PRIVATE -Wall -Wextra -Wpedantic)
     endforeach()
+elseif(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+    foreach(target ${Targets})
+        target_compile_options(${target} PRIVATE /W4)
+    endforeach()
 endif()

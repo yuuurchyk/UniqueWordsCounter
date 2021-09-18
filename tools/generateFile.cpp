@@ -37,7 +37,7 @@ auto generateFile(const std::filesystem::path &path,
     if (seed == 0)
         gen.seed(rd());
     else
-        gen.seed(seed);
+        gen.seed(static_cast<decltype(gen)::result_type>(seed));
 
     std::normal_distribution<> wordLengthDistribution{ wordsSizemean, wordsSizeStddev };
 

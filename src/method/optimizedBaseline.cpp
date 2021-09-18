@@ -22,7 +22,8 @@ auto UniqueWordsCounter::Method::Sequential::optimizedBaseline(
     auto wordCallback = [&uniqueWords, &longWords](const char *text, size_t len)
     {
         if (uniqueWords.canEmplace(text, len)) [[likely]]
-            uniqueWords.emplace(text, len);
+            uniqueWords.emplace(
+                text, static_cast<decltype(uniqueWords)::element_type::size_type>(len));
         else
             longWords.emplace(text, len);
     };

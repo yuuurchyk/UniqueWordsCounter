@@ -60,6 +60,7 @@ uint32_t UniqueWordsCounter::Utils::Hash::polynomial32ASCIILowercase(const char 
 
         auto chunkHash = uint32_t{};
 
+        // TODO: fix MSVC warnings about possible loss of data while implicit conversion
         chunkHash += kPPows[0] * characterCode(text[5]);
         chunkHash += kPPows[1] * characterCode(text[4]);
         chunkHash += kPPows[2] * characterCode(text[3]);

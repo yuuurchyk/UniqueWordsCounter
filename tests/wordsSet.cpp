@@ -53,7 +53,9 @@ TEST(WordsSet, HeavyUsage)
             continue;
 
         stlSet.insert(word);
-        wordsSet.emplace(word.data(), word.size());
+        wordsSet.emplace(
+            word.data(),
+            static_cast<decltype(wordsSet)::element_type::size_type>(word.size()));
     }
 }
 
@@ -130,7 +132,9 @@ TEST(WordsSet, ConsumeAndClearHeavyUsage)
                 continue;
 
             stdSource.insert(word);
-            source.emplace(word.data(), word.size());
+            source.emplace(
+                word.data(),
+                static_cast<decltype(source)::element_type::size_type>(word.size()));
 
             ASSERT_EQ(stdSource.size(), source.size());
         }

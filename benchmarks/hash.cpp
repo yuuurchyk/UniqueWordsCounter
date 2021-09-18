@@ -26,13 +26,14 @@ public:
             throw std::runtime_error{ "Word length should be positive, got "s +
                                       std::to_string(desiredLen) + " instead."s };
 
-        len = desiredLen;
-        std::mt19937                        gen{ len };
-        std::uniform_int_distribution<char> letters{ 'a', 'z' };
+        len      = desiredLen;
+        auto gen = std::mt19937{};
+        gen.seed(static_cast<decltype(gen)::result_type>(len));
+        auto letters = std::uniform_int_distribution<int>{ 0, 26 };
 
         _word.reserve(len);
         for (auto i = size_t{}; i < len; ++i)
-            _word.push_back(letters(gen));
+            _word.push_back(static_cast<char>('a' + letters(gen)));
         text = _word.data();
     }
 

@@ -21,10 +21,10 @@ auto getBaselineResult(const fs::path &filepath) -> size_t
 {
     static auto results = std::unordered_map<std::string, size_t>{};
 
-    if (!results.contains(filepath))
-        results.insert({ filepath, baseline(filepath) });
+    if (!results.contains(filepath.string()))
+        results.insert({ filepath.string(), baseline(filepath) });
 
-    return results.at(filepath);
+    return results.at(filepath.string());
 }
 
 }    // namespace

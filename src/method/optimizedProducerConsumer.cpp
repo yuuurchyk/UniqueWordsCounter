@@ -48,7 +48,10 @@ auto producer(ScanTaskManager_type &scanTaskManager,
             if (!producerSet->canEmplace(text, len)) [[unlikely]]
                 longWords.emplace(text, len);
             else [[likely]]
-                producerSet->emplace(text, len);
+                producerSet->emplace(
+                    text,
+                    static_cast<WordsSetManager_type::item_type::element_type::size_type>(
+                        len));
             if (producerSet->elementsUntilRehash() <= size_t{ 1 })
             {
                 wordsSetManager.setPending(*producerSet);

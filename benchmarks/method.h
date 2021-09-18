@@ -44,7 +44,7 @@
             benchmark::DoNotOptimize(result =                                         \
             FunctionName_                                                             \
             (std::forward<Args>(args)...));                                           \
-        state.counters["uniqueWords"] = result;                                       \
+        state.counters["uniqueWords"] = static_cast<double>(result);                  \
     }
 // clang-format on
 

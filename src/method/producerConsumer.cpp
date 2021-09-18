@@ -128,7 +128,7 @@ auto UniqueWordsCounter::Method::Parallel::producerConsumer(
 
                 // put a death pill for the consumers
                 {
-                    std::scoped_lock lck{ uniqueWordsQueue.mutex };
+                    std::scoped_lock lck_{ uniqueWordsQueue.mutex };
                     uniqueWordsQueue.elements.emplace_back();
                 }
                 uniqueWordsQueue.condVar.notify_one();
@@ -144,7 +144,7 @@ auto UniqueWordsCounter::Method::Parallel::producerConsumer(
 
             // push unique words into the consumers queue
             {
-                std::scoped_lock lck{ uniqueWordsQueue.mutex };
+                std::scoped_lock lck_{ uniqueWordsQueue.mutex };
                 uniqueWordsQueue.elements.push_back(std::move(uniqueWords));
             }
             // notify one of the consumers
