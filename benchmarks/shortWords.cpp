@@ -45,18 +45,7 @@ REGISTER_BENCHMARK1(concurrentSetProducerConsumer, Short, 1000, 15, jobs, 6);
 REGISTER_BENCHMARK1(concurrentSetProducerConsumer, Short, 1000, 15, jobs, 10);
 
 REGISTER_BENCHMARK1(optimizedProducerConsumer, Short, 10, 15, jobs, 3);
-REGISTER_BENCHMARK1(optimizedProducerConsumer, Short, 10, 15, jobs, 4);
-REGISTER_BENCHMARK1(optimizedProducerConsumer, Short, 10, 15, jobs, 6);
-REGISTER_BENCHMARK1(optimizedProducerConsumer, Short, 10, 15, jobs, 10);
-
 REGISTER_BENCHMARK1(optimizedProducerConsumer, Short, 100, 15, jobs, 3);
-REGISTER_BENCHMARK1(optimizedProducerConsumer, Short, 100, 15, jobs, 4);
-REGISTER_BENCHMARK1(optimizedProducerConsumer, Short, 100, 15, jobs, 6);
-REGISTER_BENCHMARK1(optimizedProducerConsumer, Short, 100, 15, jobs, 10);
-
 REGISTER_BENCHMARK1(optimizedProducerConsumer, Short, 1000, 15, jobs, 3);
-REGISTER_BENCHMARK1(optimizedProducerConsumer, Short, 1000, 15, jobs, 4);
-REGISTER_BENCHMARK1(optimizedProducerConsumer, Short, 1000, 15, jobs, 6);
-REGISTER_BENCHMARK1(optimizedProducerConsumer, Short, 1000, 15, jobs, 10);
 
 BENCHMARK_MAIN();
