@@ -65,7 +65,6 @@ BENCHMARK_DEFINE_F(HashFixture, BM_Polynomial32)(benchmark::State &state)
         benchmark::DoNotOptimize(polynomial32ASCIILowercase(text, len));
 }
 
-// TODO: should it be in anonymous namespace? (same for other benchmarks)
 BENCHMARK_REGISTER_F(HashFixture, BM_Murmur64)->RangeMultiplier(2)->Range(1, 64);
 BENCHMARK_REGISTER_F(HashFixture, BM_Polynomial32_trivial)
     ->RangeMultiplier(2)

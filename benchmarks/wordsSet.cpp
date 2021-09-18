@@ -1,7 +1,4 @@
-#include <functional>
 #include <iostream>
-#include <memory>
-#include <sstream>
 #include <stdexcept>
 #include <string>
 #include <unordered_set>
@@ -12,8 +9,6 @@
 #include "UniqueWordsCounter/utils/textFiles.h"
 #include "UniqueWordsCounter/utils/wordsSet.h"
 
-namespace
-{
 class WordsFixture : public benchmark::Fixture
 {
 public:
@@ -32,7 +27,6 @@ public:
             };
 
         words.reserve(wordsRequested);
-
         for (const auto &word : WordsGenerator{ kAllFiles })
         {
             words.push_back(word);
@@ -93,8 +87,6 @@ BENCHMARK_DEFINE_F(WordsFixture, BM_open_address_set)(benchmark::State &state)
     state.counters["uniqueWords"] = size;
 }
 
-}    // namespace
-
 BENCHMARK_REGISTER_F(WordsFixture, BM_unordered_set_of_strings)
     ->RangeMultiplier(1 << 3)
     ->Range(1 << 12, 1 << 27)
@@ -105,14 +97,4 @@ BENCHMARK_REGISTER_F(WordsFixture, BM_open_address_set)
     ->Range(1 << 12, 1 << 27)
     ->Unit(benchmark::kMillisecond);
 
-// TODO: can it be replaced with BENCHMARK_MAIN() ?
-int main(int argc, char **argv)
-{
-    // expansion of BENCHMARK_MAIN() macro
-    ::benchmark::Initialize(&argc, argv);
-    if (::benchmark::ReportUnrecognizedArguments(argc, argv))
-        return 1;
-    ::benchmark::RunSpecifiedBenchmarks();
-    ::benchmark::Shutdown();
-    return 0;
-}
+BENCHMARK_MAIN();
