@@ -1,0 +1,23 @@
+Running ./benchmark_wordsSet
+Run on (12 X 4157.81 MHz CPU s)
+CPU Caches:
+  L1 Data 32 KiB (x6)
+  L1 Instruction 32 KiB (x6)
+  L2 Unified 256 KiB (x6)
+  L3 Unified 12288 KiB (x1)
+Load Average: 4.76, 1.78, 0.97
+-------------------------------------------------------------------------------------------------------------
+Benchmark                                                   Time             CPU   Iterations UserCounters...
+-------------------------------------------------------------------------------------------------------------
+WordsFixture/BM_unordered_set_of_strings/4096           0.421 ms        0.421 ms         1728 uniqueWords=4.095k
+WordsFixture/BM_unordered_set_of_strings/32768           3.94 ms         3.94 ms          175 uniqueWords=32.765k
+WordsFixture/BM_unordered_set_of_strings/262144          55.3 ms         55.3 ms           13 uniqueWords=256.558k
+WordsFixture/BM_unordered_set_of_strings/2097152          721 ms          721 ms            1 uniqueWords=1.61785M
+WordsFixture/BM_unordered_set_of_strings/16777216        5791 ms         5788 ms            1 uniqueWords=10.4049M
+WordsFixture/BM_unordered_set_of_strings/134217728      56938 ms        56902 ms            1 uniqueWords=67.7073M
+WordsFixture/BM_open_address_set/4096                   0.181 ms        0.181 ms         3852 uniqueWords=4.095k
+WordsFixture/BM_open_address_set/32768                   1.64 ms         1.64 ms          430 uniqueWords=32.765k
+WordsFixture/BM_open_address_set/262144                  18.9 ms         18.9 ms           38 uniqueWords=256.558k
+WordsFixture/BM_open_address_set/2097152                  171 ms          171 ms            4 uniqueWords=1.61785M
+WordsFixture/BM_open_address_set/16777216                1448 ms         1448 ms            1 uniqueWords=10.4049M
+WordsFixture/BM_open_address_set/134217728              19939 ms        16441 ms            1 uniqueWords=67.7073M
