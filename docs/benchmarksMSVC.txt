@@ -1,0 +1,75 @@
+Running D:\UniqueWordsCounter\build\Release\benchmark_shortWords.exe
+Run on (12 X 2592 MHz CPU s)
+CPU Caches:
+  L1 Data 32 KiB (x6)
+  L1 Instruction 32 KiB (x6)
+  L2 Unified 256 KiB (x6)
+  L3 Unified 12288 KiB (x1)
+----------------------------------------------------------------------------------------------------------------------------
+Benchmark                                                                  Time             CPU   Iterations UserCounters...
+----------------------------------------------------------------------------------------------------------------------------
+baseline_ShortWords10MB/iterations:10                                    800 ms          797 ms           10 uniqueWords=1.27917M
+customScanning_ShortWords10MB/iterations:10                              624 ms          625 ms           10 uniqueWords=1.27917M
+optimizedBaseline_ShortWords10MB/iterations:10                           223 ms          223 ms           10 uniqueWords=1.27917M
+producerConsumer_3jobs_ShortWords10MB/iterations:10                      614 ms          372 ms           10 uniqueWords=1.27917M
+producerConsumer_4jobs_ShortWords10MB/iterations:10                      649 ms          359 ms           10 uniqueWords=1.27917M
+producerConsumer_6jobs_ShortWords10MB/iterations:10                      684 ms          356 ms           10 uniqueWords=1.27917M
+concurrentSetProducerConsumer_3jobs_ShortWords10MB/iterations:10         455 ms          164 ms           10 uniqueWords=1.27917M
+concurrentSetProducerConsumer_4jobs_ShortWords10MB/iterations:10         408 ms          166 ms           10 uniqueWords=1.27917M
+concurrentSetProducerConsumer_6jobs_ShortWords10MB/iterations:10         309 ms          161 ms           10 uniqueWords=1.27917M
+optimizedProducerConsumer_3jobs_ShortWords10MB/iterations:10             145 ms         23.4 ms           10 uniqueWords=1.27917M
+baseline_ShortWords100MB/iterations:10                                  8753 ms         8748 ms           10 uniqueWords=10.4385M
+customScanning_ShortWords100MB/iterations:10                            7100 ms         7100 ms           10 uniqueWords=10.4385M
+optimizedBaseline_ShortWords100MB/iterations:10                         2658 ms         2658 ms           10 uniqueWords=10.4385M
+producerConsumer_3jobs_ShortWords100MB/iterations:10                    8911 ms         5492 ms           10 uniqueWords=10.4385M
+producerConsumer_4jobs_ShortWords100MB/iterations:10                    7719 ms         4462 ms           10 uniqueWords=10.4385M
+producerConsumer_6jobs_ShortWords100MB/iterations:10                    8195 ms         4655 ms           10 uniqueWords=10.4385M
+concurrentSetProducerConsumer_3jobs_ShortWords100MB/iterations:10       5642 ms         1483 ms           10 uniqueWords=10.4385M
+concurrentSetProducerConsumer_4jobs_ShortWords100MB/iterations:10       4353 ms         1488 ms           10 uniqueWords=10.4385M
+concurrentSetProducerConsumer_6jobs_ShortWords100MB/iterations:10       3311 ms         1525 ms           10 uniqueWords=10.4385M
+optimizedProducerConsumer_3jobs_ShortWords100MB/iterations:10           1699 ms          223 ms           10 uniqueWords=10.4385M
+baseline_ShortWords1000MB/iterations:5                                105153 ms       105147 ms            5 uniqueWords=80.1566M
+customScanning_ShortWords1000MB/iterations:5                           92405 ms        92400 ms            5 uniqueWords=80.1566M
+optimizedBaseline_ShortWords1000MB/iterations:5                        30739 ms        30738 ms            5 uniqueWords=80.1566M
+concurrentSetProducerConsumer_3jobs_ShortWords1000MB/iterations:5      67759 ms        15884 ms            5 uniqueWords=80.1566M
+concurrentSetProducerConsumer_4jobs_ShortWords1000MB/iterations:5      51575 ms        16166 ms            5 uniqueWords=80.1566M
+concurrentSetProducerConsumer_6jobs_ShortWords1000MB/iterations:5      37878 ms        16172 ms            5 uniqueWords=80.1566M
+optimizedProducerConsumer_3jobs_ShortWords1000MB/iterations:5          19452 ms         3544 ms            5 uniqueWords=80.1566M
+
+Running D:\UniqueWordsCounter\build\Release\benchmark_longWords.exe
+Run on (12 X 2592 MHz CPU s)
+CPU Caches:
+  L1 Data 32 KiB (x6)
+  L1 Instruction 32 KiB (x6)
+  L2 Unified 256 KiB (x6)
+  L3 Unified 12288 KiB (x1)
+---------------------------------------------------------------------------------------------------------------------------
+Benchmark                                                                 Time             CPU   Iterations UserCounters...
+---------------------------------------------------------------------------------------------------------------------------
+baseline_LongWords10MB/iterations:10                                    478 ms          477 ms           10 uniqueWords=651.809k
+customScanning_LongWords10MB/iterations:10                              390 ms          389 ms           10 uniqueWords=651.809k
+optimizedBaseline_LongWords10MB/iterations:10                           136 ms          134 ms           10 uniqueWords=651.809k
+producerConsumer_3jobs_LongWords10MB/iterations:10                      381 ms          239 ms           10 uniqueWords=651.809k
+producerConsumer_4jobs_LongWords10MB/iterations:10                      422 ms          244 ms           10 uniqueWords=651.809k
+producerConsumer_6jobs_LongWords10MB/iterations:10                      441 ms          238 ms           10 uniqueWords=651.809k
+concurrentSetProducerConsumer_3jobs_LongWords10MB/iterations:10         228 ms          122 ms           10 uniqueWords=651.809k
+concurrentSetProducerConsumer_4jobs_LongWords10MB/iterations:10         207 ms          119 ms           10 uniqueWords=651.809k
+concurrentSetProducerConsumer_6jobs_LongWords10MB/iterations:10         178 ms          122 ms           10 uniqueWords=651.809k
+optimizedProducerConsumer_3jobs_LongWords10MB/iterations:10            67.3 ms         23.4 ms           10 uniqueWords=651.809k
+baseline_LongWords100MB/iterations:10                                  5143 ms         5141 ms           10 uniqueWords=6.49327M
+customScanning_LongWords100MB/iterations:10                            4129 ms         4128 ms           10 uniqueWords=6.49327M
+optimizedBaseline_LongWords100MB/iterations:10                         1499 ms         1500 ms           10 uniqueWords=6.49327M
+producerConsumer_3jobs_LongWords100MB/iterations:10                    4517 ms         2778 ms           10 uniqueWords=6.49327M
+producerConsumer_4jobs_LongWords100MB/iterations:10                    5275 ms         2909 ms           10 uniqueWords=6.49327M
+producerConsumer_6jobs_LongWords100MB/iterations:10                    5662 ms         3080 ms           10 uniqueWords=6.49327M
+concurrentSetProducerConsumer_3jobs_LongWords100MB/iterations:10       3578 ms         1753 ms           10 uniqueWords=6.49327M
+concurrentSetProducerConsumer_4jobs_LongWords100MB/iterations:10       3019 ms         1786 ms           10 uniqueWords=6.49327M
+concurrentSetProducerConsumer_6jobs_LongWords100MB/iterations:10       2557 ms         1805 ms           10 uniqueWords=6.49327M
+optimizedProducerConsumer_3jobs_LongWords100MB/iterations:10            749 ms          250 ms           10 uniqueWords=6.49327M
+baseline_LongWords1000MB/iterations:5                                 68839 ms        68834 ms            5 uniqueWords=64.6418M
+customScanning_LongWords1000MB/iterations:5                           62150 ms        62147 ms            5 uniqueWords=64.6418M
+optimizedBaseline_LongWords1000MB/iterations:5                        21505 ms        21503 ms            5 uniqueWords=64.6418M
+concurrentSetProducerConsumer_3jobs_LongWords1000MB/iterations:5      55039 ms        29628 ms            5 uniqueWords=64.6418M
+concurrentSetProducerConsumer_4jobs_LongWords1000MB/iterations:5      47150 ms        29850 ms            5 uniqueWords=64.6418M
+concurrentSetProducerConsumer_6jobs_LongWords1000MB/iterations:5      40693 ms        30272 ms            5 uniqueWords=64.6418M
+optimizedProducerConsumer_3jobs_LongWords1000MB/iterations:5          11503 ms         3272 ms            5 uniqueWords=64.6418M

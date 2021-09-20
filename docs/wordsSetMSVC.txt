@@ -1,0 +1,22 @@
+Running D:\UniqueWordsCounter\build\Release\benchmark_wordsSet.exe
+Run on (12 X 2592 MHz CPU s)
+CPU Caches:
+  L1 Data 32 KiB (x6)
+  L1 Instruction 32 KiB (x6)
+  L2 Unified 256 KiB (x6)
+  L3 Unified 12288 KiB (x1)
+-------------------------------------------------------------------------------------------------------------
+Benchmark                                                   Time             CPU   Iterations UserCounters...
+-------------------------------------------------------------------------------------------------------------
+WordsFixture/BM_unordered_set_of_strings/4096           0.612 ms        0.614 ms         1120 uniqueWords=4.095k
+WordsFixture/BM_unordered_set_of_strings/32768           4.01 ms         4.00 ms          172 uniqueWords=32.765k
+WordsFixture/BM_unordered_set_of_strings/262144          59.3 ms         58.2 ms           11 uniqueWords=256.558k
+WordsFixture/BM_unordered_set_of_strings/2097152          718 ms          719 ms            1 uniqueWords=1.61785M
+WordsFixture/BM_unordered_set_of_strings/16777216        6888 ms         6875 ms            1 uniqueWords=10.4049M
+WordsFixture/BM_unordered_set_of_strings/134217728      76753 ms        76547 ms            1 uniqueWords=67.7073M
+WordsFixture/BM_open_address_set/4096                   0.220 ms        0.222 ms         3446 uniqueWords=4.095k
+WordsFixture/BM_open_address_set/32768                   2.61 ms         2.60 ms          264 uniqueWords=32.765k
+WordsFixture/BM_open_address_set/262144                  24.3 ms         24.6 ms           28 uniqueWords=256.558k
+WordsFixture/BM_open_address_set/2097152                  212 ms          208 ms            3 uniqueWords=1.61785M
+WordsFixture/BM_open_address_set/16777216                1949 ms         1953 ms            1 uniqueWords=10.4049M
+WordsFixture/BM_open_address_set/134217728              27072 ms        27062 ms            1 uniqueWords=67.7073M
