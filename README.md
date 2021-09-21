@@ -10,7 +10,11 @@ This repository contains the collection of methods I experimented with when solv
 
 **Note:** many methods are not optimal in terms of either CPU utilization or performance. They are present for benchmarking purposes only. See the benchmark results below to identify the good ones.
 
-TODO: add benchmark results
+## Results Comparison
+
+Results are available [here](https://docs.google.com/spreadsheets/d/1cbxx_Zyy3WhucziH8Ee9Z37aHlS066uxVmp7MewoVBA/edit?usp=sharing) as a google spreadsheet. TL;DR the best methods are:
+* sequential: ```optimizedBaseline```
+* parallel: ```optimizedProducerConsumer```
 
 ## Building
 
@@ -46,7 +50,8 @@ The following options are available:
 
 ### Known Issues
 
-At the moment of writing, it is not possible to build *TBB* if you have spaces in the project path. I have already submitted an issue on [github](https://github.com/oneapi-src/oneTBB/issues/531). Hope it would be overcome soon.
+* At the moment of writing, it is not possible to build *TBB* if you have spaces in the project path. I have already submitted an issue on [github](https://github.com/oneapi-src/oneTBB/issues/531). Hope it would be overcome soon.
+* when building on Windows, *tbb* ```.dll``` libraries seem not to be linked with the resulting executables (I believe there might be some trouble with path). Current solution I use is to add the folder with *tbb* libraries to path (this should be investigated further, as I'm not using MSVC as the main platform)
 
 ## Before You Start
 
