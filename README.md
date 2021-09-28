@@ -1,8 +1,6 @@
 # Unique Words Counter
 
-This repository contains source code used in *Justifiably Complex Solution to a Dead Simple Concurrency Task* medium article.
-
-TODO: add link to article.
+This repository contains source code used in [Complex Solution to a Dead Simple Concurrency Task](https://levelup.gitconnected.com/complex-solution-to-a-dead-simple-concurrency-task-5a66ae21e3b) medium article.
 
 ## What Is It About?
 
